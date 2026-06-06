@@ -34,11 +34,6 @@ export default function VideosPage() {
   return (
     <>
       <style>{`
-        .page-wrap {
-          margin-left: var(--sidebar-w);
-          padding: 2.25rem 2.5rem;
-          min-height: 100vh;
-        }
         .tbl { width: 100%; border-collapse: collapse; }
         .tbl th {
           padding: 0.6rem 1rem;
@@ -91,13 +86,16 @@ export default function VideosPage() {
           text-decoration: none;
         }
         .primary-btn:hover { opacity: 0.82; }
+        @media (max-width: 768px) {
+          .page-header { flex-direction: column; gap: 0.75rem; align-items: flex-start !important; }
+        }
       `}</style>
       <AuthGuard>
         <Nav />
         <main className="page-wrap">
 
           {/* Header */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.75rem" }}>
+          <div className="page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.75rem" }}>
             <div>
               <h1 style={{
                 fontFamily: "var(--font-cormorant, serif)",
@@ -136,66 +134,48 @@ export default function VideosPage() {
                 </Link>
               </div>
             ) : (
-              <table className="tbl">
-                <thead>
-                  <tr>
-                    {["ID", "Thumbnail", "Title", "URL", "Priority", ""].map((h) => (
-                      <th key={h}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {videos.map((v) => (
-                    <tr key={v.id}>
-                      <td>
-                        <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: "0.75rem", color: "var(--ink-4)" }}>
-                          {v.id}
-                        </span>
-                      </td>
-                      <td>
-                        {v.thumbnailUrl ? (
-                          <img
-                            src={v.thumbnailUrl} alt=""
-                            style={{ width: 68, height: 42, objectFit: "cover", borderRadius: 5, border: "1px solid var(--border)", display: "block" }}
-                          />
-                        ) : (
-                          <div style={{ width: 68, height: 42, background: "var(--surface-2)", borderRadius: 5, border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                              <rect x="1" y="3" width="9.5" height="9.5" rx="1.5" stroke="var(--ink-4)" strokeWidth="1.1"/>
-                              <path d="M10.5 6.2l4-2.2v8l-4-2.2" stroke="var(--ink-4)" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          </div>
-                        )}
-                      </td>
-                      <td style={{ fontWeight: 500, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {v.title.en}
-                      </td>
-                      <td style={{ maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: "0.775rem", color: "var(--ink-3)" }}>
-                          {v.url}
-                        </span>
-                      </td>
-                      <td>
-                        <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: "0.82rem", color: "var(--ink-2)" }}>
-                          {v.priority}
-                        </span>
-                      </td>
-                      <td>
-                        <div style={{ display: "flex", gap: "0.4rem" }}>
-                          <Link href={`/videos/${v.id}`} className="btn-edit">Edit</Link>
-                          <button
-                            onClick={() => handleDelete(v.id, v.title.en)}
-                            disabled={deleting === v.id}
-                            className="btn-del"
-                          >
-                            {deleting === v.id ? "…" : "Delete"}
-                          </button>
-                        </div>
-                      </td>
+              <div style={{ overflowX: "auto" }}>
+                <table className="tbl">
+                  <thead>
+                    <tr>
+                      {["ID", "Title", "Priority", ""].map((h) => (
+                        <th key={h}>{h}</th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {videos.map((v) => (
+                      <tr key={v.id}>
+                        <td>
+                          <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: "0.75rem", color: "var(--ink-4)" }}>
+                            {v.id}
+                          </span>
+                        </td>
+                        <td style={{ fontWeight: 500, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {v.title.en}
+                        </td>
+                        <td>
+                          <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: "0.82rem", color: "var(--ink-2)" }}>
+                            {v.priority}
+                          </span>
+                        </td>
+                        <td>
+                          <div style={{ display: "flex", gap: "0.4rem" }}>
+                            <Link href={`/videos/${v.id}`} className="btn-edit">Edit</Link>
+                            <button
+                              onClick={() => handleDelete(v.id, v.title.en)}
+                              disabled={deleting === v.id}
+                              className="btn-del"
+                            >
+                              {deleting === v.id ? "…" : "Delete"}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </main>

@@ -10,7 +10,7 @@ export default function NewVideoPage() {
   return (
     <AuthGuard>
       <Nav />
-      <main style={{ marginLeft: "var(--sidebar-w)", padding: "2.25rem 2.5rem", minHeight: "100vh" }}>
+      <main className="page-wrap">
         <div style={{ maxWidth: 760 }}>
           <div style={{ marginBottom: "1.75rem" }}>
             <Link href="/videos" style={{ fontSize: "0.78rem", color: "var(--ink-4)", display: "inline-flex", alignItems: "center", gap: "0.25rem", marginBottom: "0.85rem", transition: "color 0.14s" }}

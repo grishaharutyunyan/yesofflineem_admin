@@ -4,25 +4,37 @@ import { useRouter } from "next/navigation";
 import LocaleField from "./LocaleField";
 import ImageUpload from "./ImageUpload";
 import GalleryUpload from "./GalleryUpload";
-import type { ApiEvent } from "@/lib/api";
+import ScheduleBuilder from "./ScheduleBuilder";
+import IncludesEditor, { type IncludeItem } from "./IncludesEditor";
+import HostEditor from "./HostEditor";
+import MapPicker from "./MapPicker";
+import type { ApiEvent, EventCoordinates, EventHost, ScheduleItem } from "@/lib/api";
 
 const STATUS_OPTIONS = ["draft", "active", "archived"];
 
-const defaultSchedule = JSON.stringify(
-  [{ time: "00:00", label: { en: "", hy: "" }, sub: { en: "", hy: "" } }],
-  null, 2
-);
-const defaultHost = JSON.stringify(
-  { name: { en: "", hy: "" }, role: { en: "", hy: "" }, imageUrl: null },
-  null, 2
-);
-const defaultCoords = JSON.stringify(
-  { lat: 40.1872, lng: 44.5152, address: { en: "", hy: "" } },
-  null, 2
-);
+function toDatetimeLocal(s: string): string {
+  if (!s) return "";
+  return s.replace(" ", "T").slice(0, 16);
+}
+
+function fromDatetimeLocal(s: string): string {
+  if (!s) return "";
+  return s.replace("T", " ");
+}
+
+function toSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, "")
+    .trim()
+    .replace(/\s+/g, "-");
+}
+
+// ─── Form State ──────────────────────────────────────────────────────────────
 
 export type EventFormState = {
-  slug: string; status: string;
+  slug: string;
+  status: string;
   label_en: string; label_hy: string;
   title_en: string; title_hy: string;
   dates_start: string; dates_end: string;
@@ -30,34 +42,45 @@ export type EventFormState = {
   locationDetail_en: string; locationDetail_hy: string;
   shortDescription_en: string; shortDescription_hy: string;
   longDescription_en: string; longDescription_hy: string;
-  includes_en: string; includes_hy: string;
-  schedule_json: string; host_json: string; coordinates_json: string;
+  includes: IncludeItem[];
+  schedule: ScheduleItem[];
+  host: EventHost;
+  coordinates: EventCoordinates;
   maxCapacity: string; bookedCount: string; price: string;
   cardImageUrl: string; galleryUrls: string[];
 };
 
 export function eventToForm(ev: ApiEvent): EventFormState {
+  const includes: IncludeItem[] = ev.includes.en.map((e, i) => ({
+    en: e,
+    hy: ev.includes.hy[i] ?? "",
+  }));
   return {
-    slug: ev.slug, status: ev.status,
+    slug: ev.slug,
+    status: ev.status,
     label_en: ev.label.en, label_hy: ev.label.hy,
     title_en: ev.title.en, title_hy: ev.title.hy,
-    dates_start: ev.dates.start, dates_end: ev.dates.end,
+    dates_start: toDatetimeLocal(ev.dates.start),
+    dates_end: toDatetimeLocal(ev.dates.end),
     location_en: ev.location.en, location_hy: ev.location.hy,
     locationDetail_en: ev.locationDetail.en, locationDetail_hy: ev.locationDetail.hy,
     shortDescription_en: ev.shortDescription.en, shortDescription_hy: ev.shortDescription.hy,
     longDescription_en: ev.longDescription.en, longDescription_hy: ev.longDescription.hy,
-    includes_en: ev.includes.en.join("\n"), includes_hy: ev.includes.hy.join("\n"),
-    schedule_json: JSON.stringify(ev.schedule, null, 2),
-    host_json: JSON.stringify(ev.host, null, 2),
-    coordinates_json: JSON.stringify(ev.coordinates, null, 2),
-    maxCapacity: String(ev.maxCapacity), bookedCount: String(ev.bookedCount), price: String(ev.price),
-    cardImageUrl: ev.cardImageUrl ?? "", galleryUrls: ev.galleryImageUrls ?? [],
+    includes,
+    schedule: ev.schedule,
+    host: ev.host,
+    coordinates: ev.coordinates,
+    maxCapacity: String(ev.maxCapacity),
+    bookedCount: String(ev.bookedCount),
+    price: String(ev.price),
+    cardImageUrl: ev.cardImageUrl ?? "",
+    galleryUrls: ev.galleryImageUrls ?? [],
   };
 }
 
 export function emptyForm(): EventFormState {
   return {
-    slug: "", status: "draft",
+    slug: "", status: "active",
     label_en: "", label_hy: "",
     title_en: "", title_hy: "",
     dates_start: "", dates_end: "",
@@ -65,8 +88,10 @@ export function emptyForm(): EventFormState {
     locationDetail_en: "", locationDetail_hy: "",
     shortDescription_en: "", shortDescription_hy: "",
     longDescription_en: "", longDescription_hy: "",
-    includes_en: "", includes_hy: "",
-    schedule_json: defaultSchedule, host_json: defaultHost, coordinates_json: defaultCoords,
+    includes: [],
+    schedule: [{ time: "", label: { en: "", hy: "" }, sub: { en: "", hy: "" } }],
+    host: { name: { en: "", hy: "" }, role: { en: "", hy: "" }, imageUrl: null },
+    coordinates: { lat: 40.1872, lng: 44.5152, address: { en: "", hy: "" } },
     maxCapacity: "10", bookedCount: "0", price: "0",
     cardImageUrl: "", galleryUrls: [],
   };
@@ -78,18 +103,21 @@ export function formToDto(f: EventFormState) {
     status: f.status,
     label: { en: f.label_en, hy: f.label_hy },
     title: { en: f.title_en, hy: f.title_hy },
-    dates: { start: f.dates_start, end: f.dates_end },
+    dates: {
+      start: fromDatetimeLocal(f.dates_start),
+      end: fromDatetimeLocal(f.dates_end),
+    },
     location: { en: f.location_en, hy: f.location_hy },
     locationDetail: { en: f.locationDetail_en, hy: f.locationDetail_hy },
     shortDescription: { en: f.shortDescription_en, hy: f.shortDescription_hy },
     longDescription: { en: f.longDescription_en, hy: f.longDescription_hy },
     includes: {
-      en: f.includes_en.split("\n").map((s) => s.trim()).filter(Boolean),
-      hy: f.includes_hy.split("\n").map((s) => s.trim()).filter(Boolean),
+      en: f.includes.map((i) => i.en).filter(Boolean),
+      hy: f.includes.map((i) => i.hy).filter(Boolean),
     },
-    schedule: JSON.parse(f.schedule_json),
-    host: JSON.parse(f.host_json),
-    coordinates: JSON.parse(f.coordinates_json),
+    schedule: f.schedule,
+    host: f.host,
+    coordinates: f.coordinates,
     maxCapacity: Number(f.maxCapacity),
     bookedCount: Number(f.bookedCount),
     price: Number(f.price),
@@ -98,43 +126,7 @@ export function formToDto(f: EventFormState) {
   };
 }
 
-interface Props {
-  initial?: ApiEvent;
-  onSubmit: (dto: object) => Promise<void>;
-}
-
-const field: React.CSSProperties = { marginBottom: "1.1rem" };
-
-const labelStyle: React.CSSProperties = {
-  fontSize: "0.78rem", fontWeight: 600,
-  color: "var(--ink-2)", display: "block",
-  marginBottom: "0.4rem", letterSpacing: "0.02em",
-};
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "0.55rem 0.75rem",
-  border: "1px solid var(--border)",
-  borderRadius: "var(--radius-sm)",
-  fontSize: "0.875rem",
-  background: "var(--surface)",
-  color: "var(--ink)",
-  outline: "none",
-  transition: "border-color 0.14s, box-shadow 0.14s",
-};
-
-const monoInputStyle: React.CSSProperties = {
-  ...inputStyle,
-  fontFamily: "var(--font-mono, monospace)",
-  fontSize: "0.82rem",
-  resize: "vertical",
-  lineHeight: 1.6,
-  background: "#faf9f6",
-};
-
-const hintStyle: React.CSSProperties = {
-  fontSize: "0.72rem", color: "var(--ink-4)", marginTop: "0.3rem",
-};
+// ─── Section Card ─────────────────────────────────────────────────────────────
 
 function SectionCard({ number, title, children }: { number: string; title: string; children: React.ReactNode }) {
   return (
@@ -155,33 +147,41 @@ function SectionCard({ number, title, children }: { number: string; title: strin
         <span style={{
           fontFamily: "var(--font-cormorant, serif)",
           fontSize: "1.15rem", fontWeight: 300,
-          color: "var(--ink-4)", lineHeight: 1,
-          letterSpacing: "-0.01em",
+          color: "var(--ink-4)", lineHeight: 1, letterSpacing: "-0.01em",
         }}>
           {number}
         </span>
         <span style={{
           fontSize: "0.72rem", fontWeight: 700,
-          letterSpacing: "0.1em", textTransform: "uppercase",
-          color: "var(--ink-3)",
+          letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--ink-3)",
         }}>
           {title}
         </span>
       </div>
-      <div style={{ padding: "1.25rem 1.4rem" }}>
-        {children}
-      </div>
+      <div style={{ padding: "1.25rem 1.4rem" }}>{children}</div>
     </div>
   );
 }
 
-function focusIn(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
-  e.currentTarget.style.borderColor = "var(--ink)";
-  e.currentTarget.style.boxShadow = "0 0 0 3px rgba(10,10,10,0.06)";
-}
-function focusOut(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
-  e.currentTarget.style.borderColor = "var(--border)";
-  e.currentTarget.style.boxShadow = "none";
+// ─── Shared styles ────────────────────────────────────────────────────────────
+
+const labelStyle: React.CSSProperties = {
+  fontSize: "0.78rem", fontWeight: 600,
+  color: "var(--ink-2)", display: "block",
+  marginBottom: "0.4rem", letterSpacing: "0.02em",
+};
+
+const hintStyle: React.CSSProperties = {
+  fontSize: "0.72rem", color: "var(--ink-4)", marginTop: "0.3rem",
+};
+
+const field: React.CSSProperties = { marginBottom: "1.1rem" };
+
+// ─── EventForm ────────────────────────────────────────────────────────────────
+
+interface Props {
+  initial?: ApiEvent;
+  onSubmit: (dto: object) => Promise<void>;
 }
 
 export default function EventForm({ initial, onSubmit }: Props) {
@@ -195,20 +195,18 @@ export default function EventForm({ initial, onSubmit }: Props) {
   }
 
   function setLocale(prefix: string, lang: "en" | "hy", val: string) {
-    setForm((p) => ({ ...p, [`${prefix}_${lang}`]: val }));
+    setForm((p) => {
+      const next: any = { ...p, [`${prefix}_${lang}`]: val };
+      if (prefix === "title" && lang === "en" && !initial) {
+        next.slug = toSlug(val);
+      }
+      return next;
+    });
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErr("");
-    try {
-      JSON.parse(form.schedule_json);
-      JSON.parse(form.host_json);
-      JSON.parse(form.coordinates_json);
-    } catch {
-      setErr("Invalid JSON in Schedule, Host, or Coordinates field.");
-      return;
-    }
     setSaving(true);
     try {
       await onSubmit(formToDto(form));
@@ -240,13 +238,6 @@ export default function EventForm({ initial, onSubmit }: Props) {
           border-color: var(--ink);
           box-shadow: 0 0 0 3px rgba(10,10,10,0.06);
         }
-        .form-mono {
-          font-family: var(--font-mono, monospace) !important;
-          font-size: 0.8rem !important;
-          background: #faf9f6 !important;
-          resize: vertical;
-          line-height: 1.65;
-        }
         .form-hint { font-size: 0.71rem; color: var(--ink-4); margin-top: 0.28rem; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
@@ -269,25 +260,28 @@ export default function EventForm({ initial, onSubmit }: Props) {
           cursor: pointer; transition: all 0.14s;
         }
         .form-btn-ghost:hover { border-color: var(--ink-2); color: var(--ink); }
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+          opacity: 0.5; cursor: pointer;
+        }
+        @media (max-width: 768px) {
+          .form-row { grid-template-columns: 1fr; }
+          .form-row-3 { grid-template-columns: 1fr; }
+          .form-actions { flex-direction: column; }
+          .form-actions button, .form-actions a { width: 100%; justify-content: center; }
+        }
       `}</style>
 
       <form onSubmit={handleSubmit}>
 
         {/* 01 Basic */}
         <SectionCard number="01" title="Basic">
-          <div className="form-row">
-            <div style={field}>
-              <label style={labelStyle}>Slug</label>
-              <input required value={form.slug} onChange={(e) => set("slug", e.target.value)}
-                className="form-input" placeholder="forest-retreat-june" />
-            </div>
-            <div style={field}>
-              <label style={labelStyle}>Status</label>
-              <select value={form.status} onChange={(e) => set("status", e.target.value)} className="form-input form-select">
-                {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
+          <div style={field}>
+            <label style={labelStyle}>Status</label>
+            <select value={form.status} onChange={(e) => set("status", e.target.value)} className="form-input form-select">
+              {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
           </div>
+
           <LocaleField label="Label (short type)" enValue={form.label_en} hyValue={form.label_hy} onChange={(l, v) => setLocale("label", l, v)} />
           <LocaleField label="Title" enValue={form.title_en} hyValue={form.title_hy} onChange={(l, v) => setLocale("title", l, v)} />
         </SectionCard>
@@ -296,29 +290,37 @@ export default function EventForm({ initial, onSubmit }: Props) {
         <SectionCard number="02" title="Dates">
           <div className="form-row">
             <div style={field}>
-              <label style={labelStyle}>Start</label>
-              <input required value={form.dates_start} onChange={(e) => set("dates_start", e.target.value)}
-                className="form-input" placeholder="2026-06-14 18:00" />
+              <label style={labelStyle}>Start date & time</label>
+              <input
+                type="datetime-local"
+                required
+                value={form.dates_start}
+                onChange={(e) => set("dates_start", e.target.value)}
+                className="form-input"
+              />
             </div>
             <div style={field}>
-              <label style={labelStyle}>End</label>
-              <input required value={form.dates_end} onChange={(e) => set("dates_end", e.target.value)}
-                className="form-input" placeholder="2026-06-16 15:00" />
+              <label style={labelStyle}>End date & time</label>
+              <input
+                type="datetime-local"
+                required
+                value={form.dates_end}
+                onChange={(e) => set("dates_end", e.target.value)}
+                className="form-input"
+              />
             </div>
           </div>
         </SectionCard>
 
         {/* 03 Location */}
         <SectionCard number="03" title="Location">
-          <LocaleField label="Location" enValue={form.location_en} hyValue={form.location_hy} onChange={(l, v) => setLocale("location", l, v)} />
+          <LocaleField label="Location name" enValue={form.location_en} hyValue={form.location_hy} onChange={(l, v) => setLocale("location", l, v)} />
           <LocaleField label="Location detail" enValue={form.locationDetail_en} hyValue={form.locationDetail_hy} onChange={(l, v) => setLocale("locationDetail", l, v)} />
-          <div style={field}>
-            <label style={labelStyle}>Coordinates (JSON)</label>
-            <textarea
-              value={form.coordinates_json}
-              onChange={(e) => set("coordinates_json", e.target.value)}
-              rows={5}
-              className="form-input form-textarea form-mono"
+          <div style={{ ...field, marginTop: "0.75rem" }}>
+            <label style={{ ...labelStyle, marginBottom: "0.65rem" }}>Map & Coordinates</label>
+            <MapPicker
+              value={form.coordinates}
+              onChange={(v) => setForm((p) => ({ ...p, coordinates: v }))}
             />
           </div>
         </SectionCard>
@@ -328,41 +330,35 @@ export default function EventForm({ initial, onSubmit }: Props) {
           <LocaleField label="Short description" enValue={form.shortDescription_en} hyValue={form.shortDescription_hy} onChange={(l, v) => setLocale("shortDescription", l, v)} multiline rows={3} />
           <LocaleField label="Long description" enValue={form.longDescription_en} hyValue={form.longDescription_hy} onChange={(l, v) => setLocale("longDescription", l, v)} multiline rows={6} hint="Use <PARA> for paragraph breaks" />
 
-          <div>
-            <label style={labelStyle}>Includes</label>
-            <p style={hintStyle}>One item per line for each language.</p>
-            <div className="form-row" style={{ marginTop: "0.45rem" }}>
-              <div>
-                <div style={{ fontSize: "0.59rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#fff", background: "var(--ink)", padding: "0.12rem 0.38rem", borderRadius: 3, display: "inline-block", marginBottom: "0.3rem" }}>en</div>
-                <textarea value={form.includes_en} onChange={(e) => set("includes_en", e.target.value)} rows={6}
-                  className="form-input form-textarea"
-                  placeholder={"Morning yoga\nForaging walk"} />
-              </div>
-              <div>
-                <div style={{ fontSize: "0.59rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#fff", background: "var(--ink-3)", padding: "0.12rem 0.38rem", borderRadius: 3, display: "inline-block", marginBottom: "0.3rem" }}>hy</div>
-                <textarea value={form.includes_hy} onChange={(e) => set("includes_hy", e.target.value)} rows={6}
-                  className="form-input form-textarea" />
-              </div>
-            </div>
+          <div style={{ marginTop: "0.85rem" }}>
+            <label style={labelStyle}>What&apos;s Included</label>
+            <p style={{ ...hintStyle, marginBottom: "0.65rem" }}>
+              Toggle predefined items or add custom ones below. Each item is shown in both EN and HY.
+            </p>
+            <IncludesEditor
+              value={form.includes}
+              onChange={(v) => setForm((p) => ({ ...p, includes: v }))}
+            />
           </div>
         </SectionCard>
 
         {/* 05 Schedule */}
         <SectionCard number="05" title="Schedule">
-          <p style={{ ...hintStyle, marginBottom: "0.65rem" }}>
-            JSON array of <code style={{ fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>{"{ time, label: { en, hy }, sub: { en, hy } }"}</code>
+          <p style={{ ...hintStyle, marginBottom: "0.75rem" }}>
+            Add schedule items with a time label (e.g. "Day 1", "09:00", "09:00–11:00") and an EN + HY description.
           </p>
-          <textarea value={form.schedule_json} onChange={(e) => set("schedule_json", e.target.value)} rows={12}
-            className="form-input form-textarea form-mono" />
+          <ScheduleBuilder
+            value={form.schedule}
+            onChange={(v) => setForm((p) => ({ ...p, schedule: v }))}
+          />
         </SectionCard>
 
         {/* 06 Host */}
         <SectionCard number="06" title="Host">
-          <p style={{ ...hintStyle, marginBottom: "0.65rem" }}>
-            JSON: <code style={{ fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>{"{ name: { en, hy }, role: { en, hy }, imageUrl }"}</code>
-          </p>
-          <textarea value={form.host_json} onChange={(e) => set("host_json", e.target.value)} rows={8}
-            className="form-input form-textarea form-mono" />
+          <HostEditor
+            value={form.host}
+            onChange={(v) => setForm((p) => ({ ...p, host: v }))}
+          />
         </SectionCard>
 
         {/* 07 Capacity & Pricing */}
@@ -391,7 +387,6 @@ export default function EventForm({ initial, onSubmit }: Props) {
           <GalleryUpload urls={form.galleryUrls} onChange={(v) => setForm((p) => ({ ...p, galleryUrls: v }))} />
         </SectionCard>
 
-        {/* Error */}
         {err && (
           <div style={{
             background: "var(--danger-bg)",
@@ -406,8 +401,7 @@ export default function EventForm({ initial, onSubmit }: Props) {
           </div>
         )}
 
-        {/* Actions */}
-        <div style={{ display: "flex", gap: "0.75rem", paddingTop: "0.25rem" }}>
+        <div className="form-actions" style={{ display: "flex", gap: "0.75rem", paddingTop: "0.25rem" }}>
           <button type="submit" disabled={saving} className="form-btn-primary">
             {saving ? "Saving…" : initial ? "Save changes" : "Create event"}
           </button>

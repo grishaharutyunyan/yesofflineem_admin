@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { clearAuth, getUser } from "@/lib/auth";
 
@@ -34,16 +35,79 @@ function SignOutIcon() {
   );
 }
 
+function HamburgerIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
+      <path d="M2 4.5h14M2 9h14M2 13.5h14" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+function XIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
+      <path d="M4 4l10 10M14 4L4 14" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
 const links = [
   { href: "/events", label: "Events", Icon: CalendarIcon },
   { href: "/videos", label: "Videos", Icon: VideoIcon },
 ];
+
+function Logo() {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "0.55rem" }}>
+      <div style={{
+        width: 30, height: 30, borderRadius: 7,
+        background: "rgba(255,255,255,0.07)",
+        border: "1px solid rgba(255,255,255,0.1)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        flexShrink: 0,
+      }}>
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+          <path d="M7.5 2.5a5 5 0 100 10 5 5 0 000-10z" stroke="rgba(255,255,255,0.65)" strokeWidth="1.2"/>
+          <path d="M7.5 5v2.5l2 2" stroke="rgba(255,255,255,0.65)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </div>
+      <div>
+        <div style={{
+          fontFamily: "var(--font-cormorant, serif)",
+          fontSize: "1.05rem", lineHeight: 1,
+          color: "rgba(255,255,255,0.82)",
+          letterSpacing: "0.01em",
+        }}>
+          <span style={{ fontWeight: 300 }}>yes</span>
+          <span style={{ fontWeight: 700 }}>offline</span>
+          <span style={{ fontWeight: 300, fontStyle: "italic", color: "rgba(255,255,255,0.38)" }}>em</span>
+        </div>
+        <div style={{
+          fontSize: "0.6rem", letterSpacing: "0.18em",
+          textTransform: "uppercase",
+          color: "rgba(255,255,255,0.22)", fontWeight: 500,
+          marginTop: "0.12rem",
+        }}>
+          admin studio
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Nav() {
   const path = usePathname();
   const router = useRouter();
   const user = getUser();
   const initial = user?.email?.[0]?.toUpperCase() ?? "A";
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
+
+  useEffect(() => { setOpen(false); }, [path]);
 
   return (
     <>
@@ -78,56 +142,86 @@ export default function Nav() {
           transition: color 0.14s, background 0.14s;
         }
         .signout-btn:hover { color: rgba(255,255,255,0.65); background: rgba(255,255,255,0.06); }
+
+        /* Mobile top bar */
+        .mob-topbar {
+          display: none;
+          position: fixed; top: 0; left: 0; right: 0;
+          height: var(--topbar-h, 52px);
+          background: var(--sidebar-bg);
+          border-bottom: 1px solid var(--sidebar-sep);
+          align-items: center; justify-content: space-between;
+          padding: 0 1rem;
+          z-index: 50;
+        }
+        .mob-burger {
+          background: none; border: none;
+          color: rgba(255,255,255,0.55);
+          cursor: pointer; padding: 0.4rem;
+          border-radius: 6px; display: flex; align-items: center;
+          transition: color 0.14s, background 0.14s;
+          flex-shrink: 0;
+        }
+        .mob-burger:hover { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.08); }
+
+        /* Backdrop */
+        .nav-backdrop {
+          display: none;
+          position: fixed; inset: 0;
+          background: rgba(0,0,0,0.5);
+          z-index: 39;
+        }
+
+        @media (max-width: 768px) {
+          .mob-topbar { display: flex; }
+
+          .nav-sidebar {
+            transform: translateX(-100%);
+            transition: transform 0.24s cubic-bezier(0.32, 0.72, 0, 1);
+          }
+          .nav-sidebar.nav-open {
+            transform: translateX(0);
+          }
+          .nav-backdrop {
+            display: none;
+            animation: none;
+          }
+          .nav-backdrop.nav-open {
+            display: block;
+          }
+        }
       `}</style>
 
-      <aside style={{
-        width: "var(--sidebar-w)", minHeight: "100vh",
-        background: "var(--sidebar-bg)",
-        display: "flex", flexDirection: "column",
-        position: "fixed", left: 0, top: 0,
-        borderRight: "1px solid var(--sidebar-sep)",
-        zIndex: 40,
-      }}>
+      {/* Mobile top bar */}
+      <div className="mob-topbar">
+        <button className="mob-burger" onClick={() => setOpen((o) => !o)} aria-label={open ? "Close menu" : "Open menu"}>
+          {open ? <XIcon /> : <HamburgerIcon />}
+        </button>
+        <Logo />
+        <div style={{ width: 36, flexShrink: 0 }} />
+      </div>
 
+      {/* Backdrop */}
+      <div className={`nav-backdrop${open ? " nav-open" : ""}`} onClick={() => setOpen(false)} />
+
+      {/* Sidebar */}
+      <aside
+        className={`nav-sidebar${open ? " nav-open" : ""}`}
+        style={{
+          width: "var(--sidebar-w)", minHeight: "100vh",
+          background: "var(--sidebar-bg)",
+          display: "flex", flexDirection: "column",
+          position: "fixed", left: 0, top: 0,
+          borderRight: "1px solid var(--sidebar-sep)",
+          zIndex: 40,
+        }}
+      >
         {/* Logo */}
         <div style={{
           padding: "1.4rem 1.2rem 1.2rem",
           borderBottom: "1px solid var(--sidebar-sep)",
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.55rem" }}>
-            <div style={{
-              width: 30, height: 30, borderRadius: 7,
-              background: "rgba(255,255,255,0.07)",
-              border: "1px solid rgba(255,255,255,0.1)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              flexShrink: 0,
-            }}>
-              <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-                <path d="M7.5 2.5a5 5 0 100 10 5 5 0 000-10z" stroke="rgba(255,255,255,0.65)" strokeWidth="1.2"/>
-                <path d="M7.5 5v2.5l2 2" stroke="rgba(255,255,255,0.65)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-            <div>
-              <div style={{
-                fontFamily: "var(--font-cormorant, serif)",
-                fontSize: "1.05rem", lineHeight: 1,
-                color: "rgba(255,255,255,0.82)",
-                letterSpacing: "0.01em",
-              }}>
-                <span style={{ fontWeight: 300 }}>yes</span>
-                <span style={{ fontWeight: 700 }}>offline</span>
-                <span style={{ fontWeight: 300, fontStyle: "italic", color: "rgba(255,255,255,0.38)" }}>em</span>
-              </div>
-              <div style={{
-                fontSize: "0.6rem", letterSpacing: "0.18em",
-                textTransform: "uppercase",
-                color: "rgba(255,255,255,0.22)", fontWeight: 500,
-                marginTop: "0.12rem",
-              }}>
-                admin studio
-              </div>
-            </div>
-          </div>
+          <Logo />
         </div>
 
         {/* Navigation */}
@@ -144,7 +238,12 @@ export default function Nav() {
           {links.map(({ href, label, Icon }) => {
             const active = path.startsWith(href);
             return (
-              <Link key={href} href={href} className={`nav-item${active ? " active" : ""}`}>
+              <Link
+                key={href}
+                href={href}
+                className={`nav-item${active ? " active" : ""}`}
+                onClick={() => setOpen(false)}
+              >
                 <Icon />
                 {label}
                 <span className="dot" />

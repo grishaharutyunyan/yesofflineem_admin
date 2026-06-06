@@ -51,11 +51,6 @@ export default function EventsPage() {
   return (
     <>
       <style>{`
-        .page-wrap {
-          margin-left: var(--sidebar-w);
-          padding: 2.25rem 2.5rem;
-          min-height: 100vh;
-        }
         .filter-pill {
           padding: 0.28rem 0.85rem;
           border: 1px solid var(--border);
@@ -129,13 +124,16 @@ export default function EventsPage() {
           text-decoration: none;
         }
         .primary-btn:hover { opacity: 0.82; }
+        @media (max-width: 768px) {
+          .page-header { flex-direction: column; gap: 0.75rem; align-items: flex-start !important; }
+        }
       `}</style>
       <AuthGuard>
         <Nav />
         <main className="page-wrap">
 
           {/* Header */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.75rem" }}>
+          <div className="page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.75rem" }}>
             <div>
               <h1 style={{
                 fontFamily: "var(--font-cormorant, serif)",
@@ -187,77 +185,74 @@ export default function EventsPage() {
                 </Link>
               </div>
             ) : (
-              <table className="tbl">
-                <thead>
-                  <tr>
-                    {["ID", "Slug", "Title", "Status", "Date", "Capacity", ""].map((h) => (
-                      <th key={h}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {events.map((ev) => {
-                    const pct = ev.maxCapacity > 0 ? (ev.bookedCount / ev.maxCapacity) * 100 : 0;
-                    const sc = STATUS_CONFIG[ev.status] ?? STATUS_CONFIG.archived;
-                    return (
-                      <tr key={ev.id}>
-                        <td>
-                          <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: "0.75rem", color: "var(--ink-4)" }}>
-                            {ev.id}
-                          </span>
-                        </td>
-                        <td>
-                          <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: "0.8rem", color: "var(--ink-2)" }}>
-                            {ev.slug}
-                          </span>
-                        </td>
-                        <td style={{ fontWeight: 500, maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {ev.title.en}
-                        </td>
-                        <td>
-                          <span style={{
-                            display: "inline-flex", alignItems: "center", gap: "0.3rem",
-                            background: sc.bg, color: sc.text,
-                            padding: "0.18rem 0.55rem", borderRadius: 100,
-                            fontSize: "0.71rem", fontWeight: 600,
-                            letterSpacing: "0.04em", textTransform: "capitalize",
-                          }}>
-                            <span style={{ width: 5, height: 5, borderRadius: "50%", background: sc.dot, flexShrink: 0 }} />
-                            {ev.status}
-                          </span>
-                        </td>
-                        <td>
-                          <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: "0.78rem", color: "var(--ink-3)", whiteSpace: "nowrap" }}>
-                            {ev.dates.start.slice(0, 10)}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="cap-bar">
-                            <div className="cap-track">
-                              <div className="cap-fill" style={{ width: `${Math.min(pct, 100)}%` }} />
-                            </div>
-                            <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: "0.775rem", color: "var(--ink-3)" }}>
-                              {ev.bookedCount}/{ev.maxCapacity}
+              <div style={{ overflowX: "auto" }}>
+                <table className="tbl">
+                  <thead>
+                    <tr>
+                      {["ID", "Title", "Status", "Date", "Capacity", ""].map((h) => (
+                        <th key={h}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {events.map((ev) => {
+                      const pct = ev.maxCapacity > 0 ? (ev.bookedCount / ev.maxCapacity) * 100 : 0;
+                      const sc = STATUS_CONFIG[ev.status] ?? STATUS_CONFIG.archived;
+                      return (
+                        <tr key={ev.id}>
+                          <td>
+                            <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: "0.75rem", color: "var(--ink-4)" }}>
+                              {ev.id}
                             </span>
-                          </div>
-                        </td>
-                        <td>
-                          <div style={{ display: "flex", gap: "0.4rem" }}>
-                            <Link href={`/events/${ev.id}`} className="btn-edit">Edit</Link>
-                            <button
-                              onClick={() => handleDelete(ev.id, ev.slug)}
-                              disabled={deleting === ev.id}
-                              className="btn-del"
-                            >
-                              {deleting === ev.id ? "…" : "Delete"}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                          </td>
+                          <td style={{ fontWeight: 500, maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {ev.title.en}
+                          </td>
+                          <td>
+                            <span style={{
+                              display: "inline-flex", alignItems: "center", gap: "0.3rem",
+                              background: sc.bg, color: sc.text,
+                              padding: "0.18rem 0.55rem", borderRadius: 100,
+                              fontSize: "0.71rem", fontWeight: 600,
+                              letterSpacing: "0.04em", textTransform: "capitalize",
+                            }}>
+                              <span style={{ width: 5, height: 5, borderRadius: "50%", background: sc.dot, flexShrink: 0 }} />
+                              {ev.status}
+                            </span>
+                          </td>
+                          <td>
+                            <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: "0.78rem", color: "var(--ink-3)", whiteSpace: "nowrap" }}>
+                              {ev.dates.start.slice(0, 10)}
+                            </span>
+                          </td>
+                          <td>
+                            <div className="cap-bar">
+                              <div className="cap-track">
+                                <div className="cap-fill" style={{ width: `${Math.min(pct, 100)}%` }} />
+                              </div>
+                              <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: "0.775rem", color: "var(--ink-3)" }}>
+                                {ev.bookedCount}/{ev.maxCapacity}
+                              </span>
+                            </div>
+                          </td>
+                          <td>
+                            <div style={{ display: "flex", gap: "0.4rem" }}>
+                              <Link href={`/events/${ev.id}`} className="btn-edit">Edit</Link>
+                              <button
+                                onClick={() => handleDelete(ev.id, ev.slug)}
+                                disabled={deleting === ev.id}
+                                className="btn-del"
+                              >
+                                {deleting === ev.id ? "…" : "Delete"}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </main>

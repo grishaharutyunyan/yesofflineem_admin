@@ -2,7 +2,6 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import LocaleField from "./LocaleField";
-import ImageUpload from "./ImageUpload";
 import { uploadVideo } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import type { ApiVideo } from "@/lib/api";
@@ -10,19 +9,19 @@ import type { ApiVideo } from "@/lib/api";
 export type VideoFormState = {
   title_en: string; title_hy: string;
   subtitle_en: string; subtitle_hy: string;
-  url: string; thumbnailUrl: string; priority: string;
+  url: string; priority: string;
 };
 
 export function videoToForm(v: ApiVideo): VideoFormState {
   return {
     title_en: v.title.en, title_hy: v.title.hy,
     subtitle_en: v.subtitle.en, subtitle_hy: v.subtitle.hy,
-    url: v.url, thumbnailUrl: v.thumbnailUrl ?? "", priority: String(v.priority),
+    url: v.url, priority: String(v.priority),
   };
 }
 
 export function emptyVideoForm(): VideoFormState {
-  return { title_en: "", title_hy: "", subtitle_en: "", subtitle_hy: "", url: "", thumbnailUrl: "", priority: "0" };
+  return { title_en: "", title_hy: "", subtitle_en: "", subtitle_hy: "", url: "", priority: "0" };
 }
 
 function formToDto(f: VideoFormState) {
@@ -30,7 +29,6 @@ function formToDto(f: VideoFormState) {
     title: { en: f.title_en, hy: f.title_hy },
     subtitle: { en: f.subtitle_en, hy: f.subtitle_hy },
     url: f.url,
-    thumbnailUrl: f.thumbnailUrl || null,
     priority: Number(f.priority),
   };
 }
@@ -179,6 +177,10 @@ export default function VideoForm({ initial, onSubmit }: Props) {
         }
         .upload-btn:hover:not(:disabled) { opacity: 0.8; }
         .upload-btn:disabled { opacity: 0.55; cursor: default; }
+        @media (max-width: 768px) {
+          .form-actions { flex-direction: column; }
+          .form-actions button { width: 100%; justify-content: center; }
+        }
       `}</style>
 
       <form onSubmit={handleSubmit}>
@@ -216,9 +218,8 @@ export default function VideoForm({ initial, onSubmit }: Props) {
           )}
         </SectionCard>
 
-        {/* 03 Thumbnail & Order */}
-        <SectionCard number="03" title="Thumbnail & Order">
-          <ImageUpload label="Thumbnail" value={form.thumbnailUrl} onChange={(v) => set("thumbnailUrl", v)} />
+        {/* 03 Order */}
+        <SectionCard number="03" title="Order">
           <div style={{ marginBottom: "1.1rem" }}>
             <label style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--ink-2)", display: "block", marginBottom: "0.4rem", letterSpacing: "0.02em" }}>
               Priority <span style={{ fontSize: "0.7rem", fontWeight: 400, color: "var(--ink-4)" }}>(lower = first)</span>
@@ -249,7 +250,7 @@ export default function VideoForm({ initial, onSubmit }: Props) {
         )}
 
         {/* Actions */}
-        <div style={{ display: "flex", gap: "0.75rem", paddingTop: "0.25rem" }}>
+        <div className="form-actions" style={{ display: "flex", gap: "0.75rem", paddingTop: "0.25rem" }}>
           <button type="submit" disabled={saving} className="form-btn-primary">
             {saving ? "Saving…" : initial ? "Save changes" : "Create video"}
           </button>

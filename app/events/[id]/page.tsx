@@ -24,7 +24,7 @@ export default function EditEventPage() {
   return (
     <AuthGuard>
       <Nav />
-      <main style={{ marginLeft: "var(--sidebar-w)", padding: "2.25rem 2.5rem", minHeight: "100vh" }}>
+      <main className="page-wrap">
         <div style={{ maxWidth: 860 }}>
           <Link href="/events" style={{ fontSize: "0.78rem", color: "var(--ink-4)", display: "inline-flex", alignItems: "center", gap: "0.25rem", marginBottom: "0.85rem", transition: "color 0.14s" }}
             onMouseEnter={(e) => (e.currentTarget.style.color = "var(--ink)")}

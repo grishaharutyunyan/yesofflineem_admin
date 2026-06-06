@@ -36,7 +36,6 @@ export interface ApiVideo {
   title: LocaleText;
   subtitle: LocaleText;
   url: string;
-  thumbnailUrl: string | null;
   priority: number;
   createdAt: string;
   updatedAt: string;
