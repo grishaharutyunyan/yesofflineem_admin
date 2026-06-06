@@ -70,6 +70,9 @@ export async function login(email: string, password: string) {
   return res.json() as Promise<{ access_token: string; user: { id: number; email: string; role: string } }>;
 }
 
+export const changePassword = (token: string, currentPassword: string, newPassword: string) =>
+  req<void>('PATCH', '/auth/change-password', token, { currentPassword, newPassword });
+
 // Events
 export const getEvents = (token: string, params = '') =>
   req<{ items: ApiEvent[]; count: number }>('GET', `/events${params ? '?' + params : ''}`, token);

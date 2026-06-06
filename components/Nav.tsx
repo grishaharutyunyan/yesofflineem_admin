@@ -258,16 +258,21 @@ export default function Nav() {
           borderTop: "1px solid var(--sidebar-sep)",
           display: "flex", alignItems: "center", gap: "0.55rem",
         }}>
-          <div style={{
-            width: 28, height: 28, borderRadius: "50%",
-            background: "rgba(255,255,255,0.08)",
-            border: "1px solid rgba(255,255,255,0.1)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: "0.7rem", fontWeight: 600, color: "rgba(255,255,255,0.55)",
-            flexShrink: 0, letterSpacing: "0.02em",
-          }}>
+          <Link
+            href="/account"
+            title="Account settings"
+            style={{
+              width: 28, height: 28, borderRadius: "50%",
+              background: path === "/account" ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.08)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: "0.7rem", fontWeight: 600, color: "rgba(255,255,255,0.55)",
+              flexShrink: 0, letterSpacing: "0.02em",
+              textDecoration: "none", transition: "background 0.14s",
+            }}
+          >
             {initial}
-          </div>
+          </Link>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
               fontSize: "0.72rem", color: "rgba(255,255,255,0.35)",
