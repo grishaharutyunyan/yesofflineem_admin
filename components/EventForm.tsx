@@ -48,6 +48,7 @@ export type EventFormState = {
   coordinates: EventCoordinates;
   maxCapacity: string; bookedCount: string; price: string;
   cardImageUrl: string; galleryUrls: string[];
+  ctaLabel_en: string; ctaLabel_hy: string;
 };
 
 export function eventToForm(ev: ApiEvent): EventFormState {
@@ -75,6 +76,8 @@ export function eventToForm(ev: ApiEvent): EventFormState {
     price: String(ev.price),
     cardImageUrl: ev.cardImageUrl ?? "",
     galleryUrls: ev.galleryImageUrls ?? [],
+    ctaLabel_en: ev.ctaLabel?.en ?? "",
+    ctaLabel_hy: ev.ctaLabel?.hy ?? "",
   };
 }
 
@@ -94,6 +97,7 @@ export function emptyForm(): EventFormState {
     coordinates: { lat: 40.1872, lng: 44.5152, address: { en: "", hy: "" } },
     maxCapacity: "10", bookedCount: "0", price: "0",
     cardImageUrl: "", galleryUrls: [],
+    ctaLabel_en: "", ctaLabel_hy: "",
   };
 }
 
@@ -123,6 +127,9 @@ export function formToDto(f: EventFormState) {
     price: Number(f.price),
     cardImageUrl: f.cardImageUrl || null,
     galleryImageUrls: f.galleryUrls.length ? f.galleryUrls : null,
+    ctaLabel: (f.ctaLabel_en || f.ctaLabel_hy)
+      ? { en: f.ctaLabel_en, hy: f.ctaLabel_hy }
+      : null,
   };
 }
 
@@ -385,6 +392,21 @@ export default function EventForm({ initial, onSubmit }: Props) {
         <SectionCard number="08" title="Images">
           <ImageUpload label="Card image" value={form.cardImageUrl} onChange={(v) => setForm((p) => ({ ...p, cardImageUrl: v }))} />
           <GalleryUpload urls={form.galleryUrls} onChange={(v) => setForm((p) => ({ ...p, galleryUrls: v }))} />
+        </SectionCard>
+
+        {/* 09 CTA Button */}
+        <SectionCard number="09" title="CTA Button">
+          <p style={{ ...hintStyle, marginBottom: "0.85rem" }}>
+            Label for the &ldquo;View &amp; reserve&rdquo; button on the public events page.
+            Leave blank to use the default text.
+          </p>
+          <LocaleField
+            label="Button label"
+            enValue={form.ctaLabel_en}
+            hyValue={form.ctaLabel_hy}
+            onChange={(l, v) => setLocale("ctaLabel", l, v)}
+            hint='default: "View & reserve"'
+          />
         </SectionCard>
 
         {err && (

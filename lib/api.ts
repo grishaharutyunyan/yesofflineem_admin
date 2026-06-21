@@ -27,6 +27,7 @@ export interface ApiEvent {
   price: number;
   cardImageUrl: string | null;
   galleryImageUrls: string[] | null;
+  ctaLabel: LocaleText | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -55,8 +56,10 @@ async function req<T>(method: string, path: string, token: string, body?: object
     const text = await res.text().catch(() => res.statusText);
     throw new Error(`${method} ${path} → ${res.status}: ${text}`);
   }
-  if (res.status === 204) return undefined as T;
-  return res.json();
+  if (res.status === 204 || res.headers.get('content-length') === '0') return undefined as T;
+  const text = await res.text();
+  if (!text) return undefined as T;
+  return JSON.parse(text) as T;
 }
 
 // Public — no token

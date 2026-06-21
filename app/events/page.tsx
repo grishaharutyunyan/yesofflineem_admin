@@ -20,6 +20,8 @@ export default function EventsPage() {
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<number | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [confirmTarget, setConfirmTarget] = useState<{ id: number; slug: string; title: string } | null>(null);
 
   async function load() {
     setLoading(true);
@@ -33,13 +35,28 @@ export default function EventsPage() {
 
   useEffect(() => { load(); }, [filter]);
 
-  async function handleDelete(id: number, slug: string) {
-    if (!confirm(`Delete "${slug}"?`)) return;
+  function handleDelete(id: number, slug: string, title: string) {
+    setConfirmTarget({ id, slug, title });
+  }
+
+  async function confirmDelete() {
+    if (!confirmTarget) return;
+    const { id, slug } = confirmTarget;
+    setConfirmTarget(null);
     setDeleting(id);
+    setDeleteError(null);
     try {
       await deleteEvent(getToken()!, id);
       setEvents((prev) => prev.filter((e) => e.id !== id));
       setTotal((t) => t - 1);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes('404')) {
+        setEvents((prev) => prev.filter((e) => e.id !== id));
+        setTotal((t) => t - 1);
+      } else {
+        setDeleteError(`Failed to delete "${slug}": ${msg}`);
+      }
     } finally {
       setDeleting(null);
     }
@@ -127,6 +144,53 @@ export default function EventsPage() {
         @media (max-width: 768px) {
           .page-header { flex-direction: column; gap: 0.75rem; align-items: flex-start !important; }
         }
+        .modal-backdrop {
+          position: fixed; inset: 0;
+          background: rgba(0,0,0,0.35);
+          display: flex; align-items: center; justify-content: center;
+          z-index: 1000;
+          animation: fadeIn 0.12s ease;
+        }
+        .modal-box {
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          box-shadow: 0 8px 32px rgba(0,0,0,0.14);
+          padding: 1.75rem 2rem 1.5rem;
+          width: 100%; max-width: 380px;
+          animation: slideUp 0.14s ease;
+        }
+        .modal-title {
+          font-family: var(--font-cormorant, serif);
+          font-size: 1.25rem; font-weight: 600;
+          color: var(--ink); margin: 0 0 0.5rem;
+        }
+        .modal-body {
+          font-size: 0.855rem; color: var(--ink-3);
+          margin: 0 0 1.4rem; line-height: 1.5;
+        }
+        .modal-body strong { color: var(--ink); font-weight: 600; }
+        .modal-actions { display: flex; gap: 0.6rem; justify-content: flex-end; }
+        .btn-cancel {
+          padding: 0.48rem 1rem;
+          border: 1px solid var(--border);
+          border-radius: var(--radius-sm);
+          background: var(--surface); color: var(--ink-3);
+          font-size: 0.835rem; font-weight: 500;
+          cursor: pointer; transition: all var(--transition);
+        }
+        .btn-cancel:hover { border-color: var(--ink-3); color: var(--ink); }
+        .btn-confirm-del {
+          padding: 0.48rem 1rem;
+          border: 1px solid var(--danger-border);
+          border-radius: var(--radius-sm);
+          background: var(--danger); color: #fff;
+          font-size: 0.835rem; font-weight: 600;
+          cursor: pointer; transition: opacity var(--transition);
+        }
+        .btn-confirm-del:hover { opacity: 0.85; }
+        @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+        @keyframes slideUp { from { transform: translateY(6px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
       `}</style>
       <AuthGuard>
         <Nav />
@@ -164,6 +228,28 @@ export default function EventsPage() {
               </button>
             ))}
           </div>
+
+          {/* Delete error banner */}
+          {deleteError && (
+            <div style={{
+              marginBottom: "1rem",
+              padding: "0.7rem 1rem",
+              background: "var(--danger-bg)",
+              border: "1px solid var(--danger-border)",
+              borderRadius: "var(--radius-sm)",
+              color: "var(--danger)",
+              fontSize: "0.82rem",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}>
+              <span>{deleteError}</span>
+              <button
+                onClick={() => setDeleteError(null)}
+                style={{ background: "none", border: "none", cursor: "pointer", color: "inherit", fontWeight: 600, fontSize: "1rem", lineHeight: 1 }}
+              >×</button>
+            </div>
+          )}
 
           {/* Table card */}
           <div style={{
@@ -239,7 +325,7 @@ export default function EventsPage() {
                             <div style={{ display: "flex", gap: "0.4rem" }}>
                               <Link href={`/events/${ev.id}`} className="btn-edit">Edit</Link>
                               <button
-                                onClick={() => handleDelete(ev.id, ev.slug)}
+                                onClick={() => handleDelete(ev.id, ev.slug, ev.title.en)}
                                 disabled={deleting === ev.id}
                                 className="btn-del"
                               >
@@ -256,6 +342,23 @@ export default function EventsPage() {
             )}
           </div>
         </main>
+
+        {/* Delete confirmation modal */}
+        {confirmTarget && (
+          <div className="modal-backdrop" onClick={() => setConfirmTarget(null)}>
+            <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+              <p className="modal-title">Delete event?</p>
+              <p className="modal-body">
+                <strong>{confirmTarget.title}</strong> will be permanently removed.
+                This cannot be undone.
+              </p>
+              <div className="modal-actions">
+                <button className="btn-cancel" onClick={() => setConfirmTarget(null)}>Cancel</button>
+                <button className="btn-confirm-del" onClick={confirmDelete}>Delete</button>
+              </div>
+            </div>
+          </div>
+        )}
       </AuthGuard>
     </>
   );
