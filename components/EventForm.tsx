@@ -71,11 +71,13 @@ export function eventToForm(ev: ApiEvent): EventFormState {
     shortDescription_en: ev.shortDescription.en, shortDescription_hy: ev.shortDescription.hy,
     longDescription_en: ev.longDescription.en, longDescription_hy: ev.longDescription.hy,
     includes,
-    schedule: ev.schedule.map((s) => ({
-      time: s.time ?? "",
-      label: { en: s.label?.en ?? "", hy: s.label?.hy ?? "" },
-      sub: { en: s.sub?.en ?? "", hy: s.sub?.hy ?? "" },
-    })),
+    schedule: ev.schedule
+      .filter((s): s is NonNullable<typeof s> => !!s && !Array.isArray(s))
+      .map((s) => ({
+        time: s.time ?? "",
+        label: { en: s.label?.en ?? "", hy: s.label?.hy ?? "" },
+        sub: { en: s.sub?.en ?? "", hy: s.sub?.hy ?? "" },
+      })),
     host: ev.host,
     coordinates: ev.coordinates,
     maxCapacity: String(ev.maxCapacity),
@@ -105,7 +107,7 @@ export function emptyForm(): EventFormState {
     shortDescription_en: "", shortDescription_hy: "",
     longDescription_en: "", longDescription_hy: "",
     includes: [],
-    schedule: [{ time: "", label: { en: "", hy: "" }, sub: { en: "", hy: "" } }],
+    schedule: [],
     host: { name: { en: "", hy: "" }, role: { en: "", hy: "" }, imageUrl: null },
     coordinates: { lat: 40.1872, lng: 44.5152, address: { en: "", hy: "" } },
     maxCapacity: "10", bookedCount: "0", price: "0",
@@ -135,7 +137,7 @@ export function formToDto(f: EventFormState) {
       en: f.includes.map((i) => i.en).filter(Boolean),
       hy: f.includes.map((i) => i.hy).filter(Boolean),
     },
-    schedule: f.schedule,
+    schedule: f.schedule.filter((s) => s.time || s.label.en || s.label.hy),
     host: f.host,
     coordinates: f.coordinates,
     maxCapacity: Number(f.maxCapacity),
@@ -221,6 +223,8 @@ export default function EventForm({ initial, onSubmit }: Props) {
   const [form, setForm] = useState<EventFormState>(initial ? eventToForm(initial) : emptyForm());
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
+  const [slugEditing, setSlugEditing] = useState(false);
+  const [slugCustomized, setSlugCustomized] = useState(!!initial);
 
   function set(key: keyof EventFormState, val: string) {
     setForm((p) => ({ ...p, [key]: val }));
@@ -229,7 +233,7 @@ export default function EventForm({ initial, onSubmit }: Props) {
   function setLocale(prefix: string, lang: "en" | "hy", val: string) {
     setForm((p) => {
       const next: any = { ...p, [`${prefix}_${lang}`]: val };
-      if (prefix === "title" && lang === "en" && !initial) {
+      if (prefix === "title" && lang === "en" && !slugCustomized) {
         next.slug = toSlug(val);
       }
       return next;
@@ -316,6 +320,59 @@ export default function EventForm({ initial, onSubmit }: Props) {
 
           <LocaleField label="Label (short type)" enValue={form.label_en} hyValue={form.label_hy} onChange={(l, v) => setLocale("label", l, v)} />
           <LocaleField label="Title" enValue={form.title_en} hyValue={form.title_hy} onChange={(l, v) => setLocale("title", l, v)} />
+
+          {/* Slug */}
+          <div style={field}>
+            <label style={labelStyle}>URL Slug</label>
+            {slugEditing ? (
+              <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                <input
+                  className="form-input"
+                  value={form.slug}
+                  onChange={(e) => { setSlugCustomized(true); set("slug", e.target.value); }}
+                  onBlur={(e) => set("slug", toSlug(e.target.value))}
+                  placeholder="url-slug"
+                  autoFocus
+                  style={{ fontFamily: "var(--font-mono, monospace)", flex: 1 }}
+                />
+                <button
+                  type="button"
+                  className="form-btn-ghost"
+                  style={{ flexShrink: 0, padding: "0.5rem 0.9rem", fontSize: "0.8rem" }}
+                  onClick={() => { set("slug", toSlug(form.slug)); setSlugEditing(false); }}
+                >
+                  Done
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                <span style={{
+                  fontFamily: "var(--font-mono, monospace)",
+                  fontSize: "0.83rem",
+                  color: form.slug ? "var(--ink-2)" : "var(--ink-4)",
+                  background: "var(--surface-2, #fafaf8)",
+                  padding: "0.45rem 0.7rem",
+                  borderRadius: "var(--radius-sm)",
+                  border: "1px solid var(--border)",
+                  flex: 1,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}>
+                  {form.slug || <em>auto-generated from title</em>}
+                </span>
+                <button
+                  type="button"
+                  className="form-btn-ghost"
+                  style={{ flexShrink: 0, padding: "0.4rem 0.85rem", fontSize: "0.78rem" }}
+                  onClick={() => setSlugEditing(true)}
+                >
+                  Edit
+                </button>
+              </div>
+            )}
+            <p style={hintStyle}>Auto-generated from the English title. Edit only if you need a custom URL.</p>
+          </div>
         </SectionCard>
 
         {/* 02 Dates */}
