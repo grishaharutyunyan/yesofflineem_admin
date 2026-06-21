@@ -71,7 +71,11 @@ export function eventToForm(ev: ApiEvent): EventFormState {
     shortDescription_en: ev.shortDescription.en, shortDescription_hy: ev.shortDescription.hy,
     longDescription_en: ev.longDescription.en, longDescription_hy: ev.longDescription.hy,
     includes,
-    schedule: ev.schedule,
+    schedule: ev.schedule.map((s) => ({
+      time: s.time ?? "",
+      label: { en: s.label?.en ?? "", hy: s.label?.hy ?? "" },
+      sub: { en: s.sub?.en ?? "", hy: s.sub?.hy ?? "" },
+    })),
     host: ev.host,
     coordinates: ev.coordinates,
     maxCapacity: String(ev.maxCapacity),
