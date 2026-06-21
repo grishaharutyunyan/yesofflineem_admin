@@ -21,16 +21,23 @@ export default function EventsPage() {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<number | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [confirmTarget, setConfirmTarget] = useState<{ id: number; slug: string; title: string } | null>(null);
 
   async function load() {
     setLoading(true);
-    const key = getToken()!;
-    const params = filter !== "all" ? `status=${filter}` : "";
-    const data = await getEvents(key, params);
-    setEvents(data.items);
-    setTotal(data.count);
-    setLoading(false);
+    setLoadError(null);
+    try {
+      const key = getToken()!;
+      const params = filter !== "all" ? `status=${filter}` : "";
+      const data = await getEvents(key, params);
+      setEvents(data.items);
+      setTotal(data.count);
+    } catch (err: unknown) {
+      setLoadError(err instanceof Error ? err.message : "Failed to load events");
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => { load(); }, [filter]);
@@ -262,6 +269,13 @@ export default function EventsPage() {
             {loading ? (
               <div style={{ padding: "4rem", textAlign: "center", color: "var(--ink-4)", fontSize: "0.875rem" }} className="pulsing">
                 Loading events…
+              </div>
+            ) : loadError ? (
+              <div style={{ padding: "4rem", textAlign: "center" }}>
+                <div style={{ color: "var(--danger)", fontSize: "0.875rem", marginBottom: "0.75rem" }}>{loadError}</div>
+                <button onClick={load} style={{ fontSize: "0.8rem", color: "var(--ink-4)", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>
+                  Retry
+                </button>
               </div>
             ) : events.length === 0 ? (
               <div style={{ padding: "4rem", textAlign: "center" }}>

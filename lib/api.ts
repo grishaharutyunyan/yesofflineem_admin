@@ -28,6 +28,9 @@ export interface ApiEvent {
   cardImageUrl: string | null;
   galleryImageUrls: string[] | null;
   ctaLabel: LocaleText | null;
+  hostSectionTitle: LocaleText | null;
+  goodToKnowTitle: LocaleText | null;
+  goodToKnowText: LocaleText | null;
   createdAt: string;
   updatedAt: string;
 }
