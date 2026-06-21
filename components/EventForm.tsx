@@ -71,7 +71,7 @@ export function eventToForm(ev: ApiEvent): EventFormState {
     shortDescription_en: ev.shortDescription.en, shortDescription_hy: ev.shortDescription.hy,
     longDescription_en: ev.longDescription.en, longDescription_hy: ev.longDescription.hy,
     includes,
-    schedule: ev.schedule
+    schedule: (ev.schedule ?? [])
       .filter((s): s is NonNullable<typeof s> => !!s && !Array.isArray(s))
       .map((s) => ({
         time: s.time ?? "",
