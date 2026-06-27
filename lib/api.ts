@@ -111,6 +111,20 @@ export const updateVideo = (token: string, id: number, dto: object) =>
 export const deleteVideo = (token: string, id: number) =>
   req<void>('DELETE', `/videos/${id}`, token);
 
+// Messages
+export interface ContactMessage {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string;
+  source: string;
+  message: string;
+  createdAt: string;
+}
+
+export const getMessages = (token: string, source?: string) =>
+  req<ContactMessage[]>('GET', `/contacts${source ? `?source=${source}` : ''}`, token);
+
 // Upload
 export async function uploadImage(token: string, file: File): Promise<string> {
   const fd = new FormData();

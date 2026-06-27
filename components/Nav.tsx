@@ -25,6 +25,16 @@ function VideoIcon() {
   );
 }
 
+function MessageIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+      <rect x="1" y="2.5" width="13" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+      <path d="M4 12.5l1.5-1H14" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M4 6h7M4 8.5h4.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
 function SignOutIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
@@ -54,6 +64,7 @@ function XIcon() {
 const links = [
   { href: "/events", label: "Events", Icon: CalendarIcon },
   { href: "/videos", label: "Videos", Icon: VideoIcon },
+  { href: "/messages", label: "Messages", Icon: MessageIcon },
 ];
 
 function Logo() {
