@@ -31,6 +31,7 @@ export interface ApiEvent {
   hostSectionTitle: LocaleText | null;
   goodToKnowTitle: LocaleText | null;
   goodToKnowText: LocaleText | null;
+  goodToKnowTextTitle: LocaleText | null;
   createdAt: string;
   updatedAt: string;
 }

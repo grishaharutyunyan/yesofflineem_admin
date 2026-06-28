@@ -52,6 +52,7 @@ export type EventFormState = {
   hostSectionTitle_en: string; hostSectionTitle_hy: string;
   goodToKnowTitle_en: string; goodToKnowTitle_hy: string;
   goodToKnowText_en: string; goodToKnowText_hy: string;
+  goodToKnowTextTitle_en: string; goodToKnowTextTitle_hy: string;
 };
 
 export function eventToForm(ev: ApiEvent): EventFormState {
@@ -93,6 +94,8 @@ export function eventToForm(ev: ApiEvent): EventFormState {
     goodToKnowTitle_hy: ev.goodToKnowTitle?.hy ?? "",
     goodToKnowText_en: ev.goodToKnowText?.en ?? "",
     goodToKnowText_hy: ev.goodToKnowText?.hy ?? "",
+    goodToKnowTextTitle_en: ev.goodToKnowTextTitle?.en ?? "",
+    goodToKnowTextTitle_hy: ev.goodToKnowTextTitle?.hy ?? "",
   };
 }
 
@@ -116,6 +119,7 @@ export function emptyForm(): EventFormState {
     hostSectionTitle_en: "", hostSectionTitle_hy: "",
     goodToKnowTitle_en: "", goodToKnowTitle_hy: "",
     goodToKnowText_en: "", goodToKnowText_hy: "",
+    goodToKnowTextTitle_en: "", goodToKnowTextTitle_hy: "",
   };
 }
 
@@ -156,6 +160,9 @@ export function formToDto(f: EventFormState) {
       : null,
     goodToKnowText: (f.goodToKnowText_en || f.goodToKnowText_hy)
       ? { en: f.goodToKnowText_en, hy: f.goodToKnowText_hy }
+      : null,
+    goodToKnowTextTitle: (f.goodToKnowTextTitle_en || f.goodToKnowTextTitle_hy)
+      ? { en: f.goodToKnowTextTitle_en, hy: f.goodToKnowTextTitle_hy }
       : null,
   };
 }
@@ -517,6 +524,12 @@ export default function EventForm({ initial, onSubmit }: Props) {
             onChange={(l, v) => setLocale("goodToKnowText", l, v)}
             multiline
             rows={3}
+          />
+          <LocaleField
+            label="Body text title"
+            enValue={form.goodToKnowTextTitle_en}
+            hyValue={form.goodToKnowTextTitle_hy}
+            onChange={(l, v) => setLocale("goodToKnowTextTitle", l, v)}
           />
         </SectionCard>
 
