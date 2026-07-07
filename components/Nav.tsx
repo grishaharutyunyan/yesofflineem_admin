@@ -35,6 +35,15 @@ function MessageIcon() {
   );
 }
 
+function OrdersIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+      <rect x="2" y="1.5" width="11" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+      <path d="M4.5 5h6M4.5 7.5h6M4.5 10h4" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
 function SignOutIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
@@ -65,6 +74,7 @@ const links = [
   { href: "/events", label: "Events", Icon: CalendarIcon },
   { href: "/videos", label: "Videos", Icon: VideoIcon },
   { href: "/messages", label: "Messages", Icon: MessageIcon },
+  { href: "/orders", label: "Orders", Icon: OrdersIcon },
 ];
 
 function Logo() {

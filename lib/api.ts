@@ -162,3 +162,58 @@ export async function uploadVideo(token: string, file: File): Promise<string> {
   if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
   return (await res.json()).url as string;
 }
+
+// Orders
+export interface ApiOrder {
+  id: number;
+  orderNumber: string;
+  eventId: number;
+  eventSlug: string;
+  eventTitle: LocaleText;
+  firstName: string;
+  lastName: string | null;
+  email: string;
+  phone: string | null;
+  notes: string | null;
+  guests: number;
+  amount: number;
+  currency: string;
+  status: string;
+  panMasked: string | null;
+  actionCode: string | null;
+  actionCodeDescription: string | null;
+  paymentDate: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PaginatedOrders {
+  items: ApiOrder[];
+  count: number;
+  page: number;
+  limit: number;
+  offset: number;
+}
+
+export const getOrders = (token: string, query = "") =>
+  req<PaginatedOrders>("GET", `/orders${query ? `?${query}` : ""}`, token);
+
+export const getOrder = (token: string, id: number) =>
+  req<ApiOrder>("GET", `/orders/${id}`, token);
+
+export const refundOrder = (token: string, id: number) =>
+  req<ApiOrder>("POST", `/orders/${id}/refund`, token);
+
+export const reverseOrder = (token: string, id: number) =>
+  req<ApiOrder>("POST", `/orders/${id}/reverse`, token);
+
+export const ordersCsvUrl = (query = "") =>
+  `${BASE}/orders/export${query ? `?${query}` : ""}`;
+
+export async function exportOrders(token: string, query = ""): Promise<Blob> {
+  const res = await fetch(ordersCsvUrl(query), {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(`Export failed: ${res.status}`);
+  return res.blob();
+}
