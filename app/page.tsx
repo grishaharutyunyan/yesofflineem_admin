@@ -6,7 +6,7 @@ import { getToken } from "@/lib/auth";
 export default function Root() {
   const router = useRouter();
   useEffect(() => {
-    router.replace(getToken() ? "/events" : "/login");
+    router.replace(getToken() ? "/dashboard" : "/login");
   }, [router]);
   return null;
 }

@@ -4,6 +4,17 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { clearAuth, getUser } from "@/lib/auth";
 
+function DashboardIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+      <rect x="1.5" y="1.5" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.2"/>
+      <rect x="8.5" y="1.5" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.2"/>
+      <rect x="1.5" y="8.5" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.2"/>
+      <rect x="8.5" y="8.5" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.2"/>
+    </svg>
+  );
+}
+
 function CalendarIcon() {
   return (
     <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
@@ -71,6 +82,7 @@ function XIcon() {
 }
 
 const links = [
+  { href: "/dashboard", label: "Dashboard", Icon: DashboardIcon },
   { href: "/events", label: "Events", Icon: CalendarIcon },
   { href: "/videos", label: "Videos", Icon: VideoIcon },
   { href: "/messages", label: "Messages", Icon: MessageIcon },
