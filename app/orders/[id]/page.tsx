@@ -145,6 +145,30 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             {order.notes && <Row label="Notes" value={order.notes} />}
           </div>
 
+          {order.guestDetails && order.guestDetails.length > 0 && (
+            <div style={{
+              background: "var(--surface)",
+              border: "1px solid var(--border)",
+              borderRadius: "var(--radius)",
+              boxShadow: "var(--shadow)",
+              padding: "1.25rem 1.5rem",
+              display: "grid",
+              gap: "0.65rem",
+              marginTop: "1.25rem",
+            }}>
+              <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--ink-2)", marginBottom: "0.25rem" }}>
+                Additional guests
+              </div>
+              {order.guestDetails.map((g, i) => (
+                <Row
+                  key={i}
+                  label={`Guest ${i + 2}`}
+                  value={`${g.firstName} ${g.lastName ?? ""}`.trim() + (g.phone ? ` · ${g.phone}` : "")}
+                />
+              ))}
+            </div>
+          )}
+
           {canAct && (
             <div style={{ display: "flex", gap: "0.85rem", marginTop: "1.5rem" }}>
               <button disabled={!!busy} onClick={() => setConfirm("refund")} className="danger-btn">

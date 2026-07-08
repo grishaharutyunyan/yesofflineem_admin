@@ -164,6 +164,12 @@ export async function uploadVideo(token: string, file: File): Promise<string> {
 }
 
 // Orders
+export interface GuestDetail {
+  firstName: string;
+  lastName?: string | null;
+  phone?: string | null;
+}
+
 export interface ApiOrder {
   id: number;
   orderNumber: string;
@@ -176,6 +182,7 @@ export interface ApiOrder {
   phone: string | null;
   notes: string | null;
   guests: number;
+  guestDetails: GuestDetail[] | null;
   amount: number;
   currency: string;
   status: string;
