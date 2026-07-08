@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import AuthGuard from "@/components/AuthGuard";
 import Nav from "@/components/Nav";
-import { getOrders, exportOrders, type ApiOrder } from "@/lib/api";
+import { getOrders, exportOrders, currencyLabel, type ApiOrder } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 
 const STATUS_FILTERS = ["all", "pending", "paid", "failed", "refunded", "reversed"];
@@ -234,7 +234,7 @@ export default function OrdersPage() {
                           </td>
                           <td>{o.eventTitle?.en ?? o.eventSlug}</td>
                           <td>{o.guests}</td>
-                          <td style={{ whiteSpace: "nowrap" }}>{o.currency} {(o.amount / 100).toLocaleString()}</td>
+                          <td style={{ whiteSpace: "nowrap" }}>{currencyLabel(o.currency)} {(o.amount / 100).toLocaleString()}</td>
                           <td>
                             <span style={{
                               display: "inline-flex", alignItems: "center",

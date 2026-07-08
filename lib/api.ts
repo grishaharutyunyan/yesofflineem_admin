@@ -214,6 +214,14 @@ export const refundOrder = (token: string, id: number) =>
 export const reverseOrder = (token: string, id: number) =>
   req<ApiOrder>("POST", `/orders/${id}/reverse`, token);
 
+// Maps ISO 4217 numeric currency codes (as stored by the payment gateway) to
+// their human-readable alphabetic code. Mirrors the backend's mapping.
+const CURRENCY_LABELS: Record<string, string> = {
+  "051": "AMD",
+};
+
+export const currencyLabel = (code: string) => CURRENCY_LABELS[code] ?? code;
+
 export const ordersCsvUrl = (query = "") =>
   `${BASE}/orders/export${query ? `?${query}` : ""}`;
 

@@ -3,7 +3,7 @@ import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import AuthGuard from "@/components/AuthGuard";
 import Nav from "@/components/Nav";
-import { getOrder, refundOrder, reverseOrder, type ApiOrder } from "@/lib/api";
+import { getOrder, refundOrder, reverseOrder, currencyLabel, type ApiOrder } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 
 const STATUS_COLOR: Record<string, { bg: string; text: string }> = {
@@ -138,7 +138,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             <Row label="Email" value={order.email} />
             <Row label="Phone" value={order.phone ?? "—"} />
             <Row label="Guests" value={String(order.guests)} />
-            <Row label="Amount" value={`${order.currency} ${(order.amount / 100).toLocaleString()}`} />
+            <Row label="Amount" value={`${currencyLabel(order.currency)} ${(order.amount / 100).toLocaleString()}`} />
             <Row label="Card" value={order.panMasked ?? "—"} />
             <Row label="Paid at" value={order.paymentDate ? new Date(order.paymentDate).toLocaleString() : "—"} />
             <Row label="Gateway result" value={order.actionCodeDescription ?? "—"} />

@@ -5,6 +5,7 @@ import Link from "next/link";
 import AuthGuard from "@/components/AuthGuard";
 import Nav from "@/components/Nav";
 import EventForm from "@/components/EventForm";
+import EventParticipants from "@/components/EventParticipants";
 import { getEvent, updateEvent, type ApiEvent } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 
@@ -55,6 +56,7 @@ export default function EditEventPage() {
                 initial={event}
                 onSubmit={(dto) => updateEvent(getToken()!, event.id, dto).then(() => {})}
               />
+              <EventParticipants eventId={event.id} />
             </>
           ) : null}
         </div>
