@@ -34,6 +34,7 @@ export const DETAIL_LABELS: Record<Lang, {
   back: string; dateTime: string; location: string; groupSize: string; guests: string;
   availability: string; free: string; priceNote: string; reserve: string; soldOut: string;
   about: string; included: string; schedule: string; mapTitle: string; openMaps: string;
+  priceUnit: string; viewReserve: string;
   spotsLeft: (n: number) => string;
 }> = {
   en: {
@@ -41,6 +42,7 @@ export const DETAIL_LABELS: Record<Lang, {
     guests: "participants", availability: "Availability", free: "Free", priceNote: "AMD / person",
     reserve: "Reservation", soldOut: "Sold out", about: "About the experience", included: "What's Included",
     schedule: "Schedule", mapTitle: "Map —", openMaps: "Open in Maps ↗",
+    priceUnit: "AMD / person", viewReserve: "view and reserve",
     spotsLeft: (n) => `Only ${n} spots remaining`,
   },
   hy: {
@@ -48,6 +50,7 @@ export const DETAIL_LABELS: Record<Lang, {
     guests: "հոգի", availability: "Հասանելիություն", free: "Անվճար", priceNote: "ՀՀ դրամ / անձ",
     reserve: "Ամրագրում", soldOut: "Ամբողջությամբ վաճառված", about: "Փորձառության մասին",
     included: "Ինչ է ներառված", schedule: "Ժամանակացույց", mapTitle: "Քարտեզ —", openMaps: "Բացել Maps-ում ↗",
+    priceUnit: "ՀՀ դրամ / անձ", viewReserve: "Դիտել և ամրագրել",
     spotsLeft: (n) => `${n} տեղ է մնացել`,
   },
 };
@@ -58,3 +61,6 @@ export const FALLBACK_GALLERY = [
   "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=800&q=80",
   "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=800&q=80",
 ];
+
+export const CARD_FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1200&q=80";
