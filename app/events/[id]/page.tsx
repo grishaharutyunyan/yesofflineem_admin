@@ -54,6 +54,8 @@ export default function EditEventPage() {
                 </div>
                 <Link
                   href={`/events/${event.id}/preview`}
+                  target="_blank"
+                  rel="noopener"
                   style={{
                     fontSize: "0.78rem", color: "var(--ink-3)",
                     border: "1px solid var(--border)", borderRadius: "var(--radius-sm)",

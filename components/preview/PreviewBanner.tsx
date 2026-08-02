@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { Lang } from "@/lib/event-i18n";
 
 const STATUS_COLORS: Record<string, { bg: string; text: string; dot: string }> = {
   active: { bg: "var(--success-bg)", text: "var(--success)", dot: "var(--success)" },
@@ -17,8 +18,8 @@ export default function PreviewBanner({
   backHref,
 }: {
   status: string;
-  lang: "en" | "hy";
-  onLangChange: (lang: "en" | "hy") => void;
+  lang: Lang;
+  onLangChange: (lang: Lang) => void;
   backHref: string;
 }) {
   const sc = STATUS_COLORS[status] ?? STATUS_COLORS.archived;

@@ -4,6 +4,7 @@ import type { EventView } from "@/lib/event-view";
 import type { Lang } from "@/lib/event-i18n";
 import { DETAIL_LABELS, FALLBACK_GALLERY } from "@/lib/preview-labels";
 import { PREVIEW_BANNER_HEIGHT } from "./PreviewBanner";
+import { PREVIEW_NAV_HEIGHT } from "./PreviewNav";
 
 export default function EventPreviewContent({ view, lang }: { view: EventView; lang: Lang }) {
   const t = DETAIL_LABELS[lang];
@@ -36,7 +37,7 @@ export default function EventPreviewContent({ view, lang }: { view: EventView; l
         }
       `}</style>
 
-      <main style={{ paddingTop: PREVIEW_BANNER_HEIGHT + 78, background: "#fff" }}>
+      <main style={{ paddingTop: PREVIEW_BANNER_HEIGHT + PREVIEW_NAV_HEIGHT, background: "#fff" }}>
         <div className="preview-detail-hero" style={{ display: "grid", gridTemplateColumns: "1fr 420px", alignItems: "stretch", minHeight: 560 }}>
           <div className="preview-detail-gallery">
             <div className="preview-gallery-grid">

@@ -6,6 +6,8 @@ import { PREVIEW_BANNER_HEIGHT } from "./PreviewBanner";
 import { NAV_LINK_LABELS, LOGO_PARTS } from "@/lib/preview-labels";
 import type { Lang } from "@/lib/event-i18n";
 
+export const PREVIEW_NAV_HEIGHT = 78;
+
 export default function PreviewNav({
   lang,
   onLangChange,
@@ -109,7 +111,7 @@ export default function PreviewNav({
       </nav>
 
       {menuOpen && (
-        <div style={{ position: "fixed", top: PREVIEW_BANNER_HEIGHT + 78, left: 0, right: 0, zIndex: 99, background: "rgba(255,255,255,0.97)", backdropFilter: "blur(14px)", borderBottom: "1px solid rgba(0,0,0,0.06)", padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.2rem" }}>
+        <div style={{ position: "fixed", top: PREVIEW_BANNER_HEIGHT + PREVIEW_NAV_HEIGHT, left: 0, right: 0, zIndex: 99, background: "rgba(255,255,255,0.97)", backdropFilter: "blur(14px)", borderBottom: "1px solid rgba(0,0,0,0.06)", padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.2rem" }}>
           {links.items.map((label) => (
             <span key={label} style={{ fontFamily: "var(--font-sans)", fontSize: "0.84rem", fontWeight: 400, letterSpacing: "0.06em", textTransform: "uppercase", color: "#4a4a4a" }}>
               {label}
