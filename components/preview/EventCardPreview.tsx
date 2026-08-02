@@ -12,17 +12,19 @@ export default function EventCardPreview({ view, lang }: { view: EventView; lang
     <>
       <style>{`
         .preview-event-card {
+          height: 560px; min-height: 560px; max-height: 560px;
           display: grid; grid-template-columns: 1.2fr 1fr;
           border: 1px solid #e8e8e8; overflow: hidden; background: #fff;
         }
         @media (max-width: 900px) {
-          .preview-event-card { grid-template-columns: 1fr !important; }
+          .preview-event-card { grid-template-columns: 1fr !important; min-height: auto !important; height: auto !important; max-height: none !important; }
           .preview-event-right { border-left: none !important; border-top: 1px solid rgba(0,0,0,0.05); }
+          .preview-event-image-wrap { min-height: auto !important; aspect-ratio: 3 / 2 !important; }
         }
       `}</style>
 
       <div className="preview-event-card" style={{ maxWidth: 1280, margin: "0 auto" }}>
-        <div style={{ position: "relative", overflow: "hidden", display: "flex", width: "100%", minHeight: 280 }}>
+        <div className="preview-event-image-wrap" style={{ position: "relative", overflow: "hidden", display: "flex", width: "100%" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={imgSrc} alt={view.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(0,0,0,0.25) 0%,transparent 50%)" }} />
