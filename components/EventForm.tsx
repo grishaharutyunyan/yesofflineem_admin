@@ -33,6 +33,18 @@ function joinDateTime(date: string, time: string): string {
   return `${date}T${time || "00:00"}`;
 }
 
+const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
+const MINUTE_OPTIONS = Array.from({ length: 12 }, (_, i) => String(i * 5).padStart(2, "0"));
+
+function splitTime(t: string): { hour: string; minute: string } {
+  const [hour, minute] = t.split(":");
+  return { hour: hour ?? "00", minute: minute ?? "00" };
+}
+
+function joinTime(hour: string, minute: string): string {
+  return `${hour}:${minute}`;
+}
+
 function toSlug(title: string): string {
   return title
     .toLowerCase()
@@ -314,8 +326,7 @@ export default function EventForm({ initial, onSubmit }: Props) {
           cursor: pointer; transition: all 0.14s;
         }
         .form-btn-ghost:hover { border-color: var(--ink-2); color: var(--ink); }
-        input[type="date"]::-webkit-calendar-picker-indicator,
-        input[type="time"]::-webkit-calendar-picker-indicator {
+        input[type="date"]::-webkit-calendar-picker-indicator {
           opacity: 0.5; cursor: pointer;
         }
         @media (max-width: 768px) {
@@ -408,14 +419,30 @@ export default function EventForm({ initial, onSubmit }: Props) {
                   className="form-input"
                   style={{ flex: 1 }}
                 />
-                <input
-                  type="time"
+                <select
                   required
-                  value={splitDateTime(form.dates_start).time}
-                  onChange={(e) => set("dates_start", joinDateTime(splitDateTime(form.dates_start).date, e.target.value))}
-                  className="form-input"
+                  value={splitTime(splitDateTime(form.dates_start).time).hour}
+                  onChange={(e) => {
+                    const { date, time } = { date: splitDateTime(form.dates_start).date, time: splitDateTime(form.dates_start).time };
+                    set("dates_start", joinDateTime(date, joinTime(e.target.value, splitTime(time).minute)));
+                  }}
+                  className="form-select"
                   style={{ flex: 1 }}
-                />
+                >
+                  {HOUR_OPTIONS.map((h) => <option key={h} value={h}>{h}</option>)}
+                </select>
+                <select
+                  required
+                  value={splitTime(splitDateTime(form.dates_start).time).minute}
+                  onChange={(e) => {
+                    const { date, time } = { date: splitDateTime(form.dates_start).date, time: splitDateTime(form.dates_start).time };
+                    set("dates_start", joinDateTime(date, joinTime(splitTime(time).hour, e.target.value)));
+                  }}
+                  className="form-select"
+                  style={{ flex: 1 }}
+                >
+                  {MINUTE_OPTIONS.map((m) => <option key={m} value={m}>{m}</option>)}
+                </select>
               </div>
             </div>
             <div style={field}>
@@ -429,14 +456,30 @@ export default function EventForm({ initial, onSubmit }: Props) {
                   className="form-input"
                   style={{ flex: 1 }}
                 />
-                <input
-                  type="time"
+                <select
                   required
-                  value={splitDateTime(form.dates_end).time}
-                  onChange={(e) => set("dates_end", joinDateTime(splitDateTime(form.dates_end).date, e.target.value))}
-                  className="form-input"
+                  value={splitTime(splitDateTime(form.dates_end).time).hour}
+                  onChange={(e) => {
+                    const { date, time } = { date: splitDateTime(form.dates_end).date, time: splitDateTime(form.dates_end).time };
+                    set("dates_end", joinDateTime(date, joinTime(e.target.value, splitTime(time).minute)));
+                  }}
+                  className="form-select"
                   style={{ flex: 1 }}
-                />
+                >
+                  {HOUR_OPTIONS.map((h) => <option key={h} value={h}>{h}</option>)}
+                </select>
+                <select
+                  required
+                  value={splitTime(splitDateTime(form.dates_end).time).minute}
+                  onChange={(e) => {
+                    const { date, time } = { date: splitDateTime(form.dates_end).date, time: splitDateTime(form.dates_end).time };
+                    set("dates_end", joinDateTime(date, joinTime(splitTime(time).hour, e.target.value)));
+                  }}
+                  className="form-select"
+                  style={{ flex: 1 }}
+                >
+                  {MINUTE_OPTIONS.map((m) => <option key={m} value={m}>{m}</option>)}
+                </select>
               </div>
             </div>
           </div>
