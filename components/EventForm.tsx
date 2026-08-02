@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import LocaleField from "./LocaleField";
 import ImageUpload from "./ImageUpload";
 import GalleryUpload from "./GalleryUpload";
@@ -551,6 +552,11 @@ export default function EventForm({ initial, onSubmit }: Props) {
           <button type="submit" disabled={saving} className="form-btn-primary">
             {saving ? "Saving…" : initial ? "Save changes" : "Create event"}
           </button>
+          {initial && (
+            <Link href={`/events/${initial.id}/preview`} target="_blank" rel="noopener" className="form-btn-ghost">
+              Preview →
+            </Link>
+          )}
           <button type="button" onClick={() => router.push("/events")} className="form-btn-ghost">
             Cancel
           </button>
