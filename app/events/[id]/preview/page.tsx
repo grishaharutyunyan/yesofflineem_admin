@@ -3,14 +3,25 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import AuthGuard from "@/components/AuthGuard";
-import PreviewBanner from "@/components/preview/PreviewBanner";
-import PreviewNav from "@/components/preview/PreviewNav";
+import PreviewBanner, { PREVIEW_BANNER_HEIGHT } from "@/components/preview/PreviewBanner";
+import PreviewNav, { PREVIEW_NAV_HEIGHT } from "@/components/preview/PreviewNav";
 import PreviewFooter from "@/components/preview/PreviewFooter";
 import EventPreviewContent from "@/components/preview/EventPreviewContent";
+import EventCardPreview from "@/components/preview/EventCardPreview";
 import { getEvent, type ApiEvent } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { toEventView } from "@/lib/event-view";
 import type { Lang } from "@/lib/event-i18n";
+
+function SectionLabel({ children }: { children: string }) {
+  return (
+    <div style={{ maxWidth: 1280, margin: "0 auto", padding: "1.5rem 0" }}>
+      <div style={{ fontFamily: "var(--font-sans)", fontSize: "0.72rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-4)", fontWeight: 600 }}>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 export default function EventPreviewPage() {
   const { id } = useParams<{ id: string }>();
@@ -45,6 +56,16 @@ export default function EventPreviewPage() {
         <>
           <PreviewBanner status={event.status} lang={lang} onLangChange={setLang} backHref={`/events/${id}`} />
           <PreviewNav lang={lang} onLangChange={setLang} />
+
+          <div style={{ padding: `${PREVIEW_BANNER_HEIGHT + PREVIEW_NAV_HEIGHT}px 3rem 2rem`, background: "#fafafa" }}>
+            <SectionLabel>As it appears in the Events list</SectionLabel>
+            <EventCardPreview view={toEventView(event, lang)} lang={lang} />
+          </div>
+
+          <div style={{ padding: "0 3rem", background: "#fafafa", borderTop: "1px solid #e8e8e8" }}>
+            <SectionLabel>As it appears on its own page</SectionLabel>
+          </div>
+
           <EventPreviewContent view={toEventView(event, lang)} lang={lang} />
           <PreviewFooter lang={lang} />
         </>
