@@ -2,9 +2,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import TimePicker from "react-time-picker";
-import "react-time-picker/dist/TimePicker.css";
-import "react-clock/dist/Clock.css";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { TimePicker } from "@mui/x-date-pickers/TimePicker";
+import dayjs, { type Dayjs } from "dayjs";
 import LocaleField from "./LocaleField";
 import ImageUpload from "./ImageUpload";
 import GalleryUpload from "./GalleryUpload";
@@ -36,6 +37,16 @@ function joinDateTime(date: string, time: string): string {
   return `${date}T${time || "00:00"}`;
 }
 
+function timeToDayjs(time: string): Dayjs | null {
+  if (!time) return null;
+  const [h, m] = time.split(":").map(Number);
+  return dayjs().hour(h || 0).minute(m || 0).second(0);
+}
+
+function dayjsToTime(value: Dayjs | null): string {
+  if (!value) return "00:00";
+  return value.format("HH:mm");
+}
 
 function toSlug(title: string): string {
   return title
@@ -297,26 +308,6 @@ export default function EventForm({ initial, onSubmit }: Props) {
           box-shadow: 0 0 0 3px rgba(10,10,10,0.06);
         }
         .form-hint { font-size: 0.71rem; color: var(--ink-4); margin-top: 0.28rem; }
-        .form-time-picker { flex: 1; }
-        .form-time-picker.react-time-picker { display: flex; }
-        .form-time-picker .react-time-picker__wrapper {
-          border: 1px solid var(--border);
-          border-radius: var(--radius-sm);
-          padding: 0.55rem 0.75rem;
-          background: var(--surface);
-          color: var(--ink);
-          font-family: inherit;
-          font-size: 0.875rem;
-        }
-        .form-time-picker:focus-within .react-time-picker__wrapper {
-          border-color: var(--ink);
-          box-shadow: 0 0 0 3px rgba(10,10,10,0.06);
-        }
-        .form-time-picker .react-time-picker__clock {
-          border-radius: var(--radius-sm);
-          box-shadow: var(--shadow, 0 8px 24px rgba(0,0,0,0.12));
-          z-index: 20;
-        }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
         .form-btn-primary {
@@ -349,6 +340,7 @@ export default function EventForm({ initial, onSubmit }: Props) {
         }
       `}</style>
 
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
       <form onSubmit={handleSubmit}>
 
         {/* 01 Basic */}
@@ -432,12 +424,12 @@ export default function EventForm({ initial, onSubmit }: Props) {
                   style={{ flex: 1 }}
                 />
                 <TimePicker
-                  format="HH:mm"
-                  clearIcon={null}
-                  disableClock={false}
-                  className="form-time-picker"
-                  value={splitDateTime(form.dates_start).time || null}
-                  onChange={(v) => set("dates_start", joinDateTime(splitDateTime(form.dates_start).date, v || "00:00"))}
+                  label="Basic time picker"
+                  ampm={false}
+                  value={timeToDayjs(splitDateTime(form.dates_start).time)}
+                  onChange={(v) => set("dates_start", joinDateTime(splitDateTime(form.dates_start).date, dayjsToTime(v)))}
+                  slotProps={{ textField: { required: true, fullWidth: true } }}
+                  sx={{ flex: 1 }}
                 />
               </div>
             </div>
@@ -453,12 +445,12 @@ export default function EventForm({ initial, onSubmit }: Props) {
                   style={{ flex: 1 }}
                 />
                 <TimePicker
-                  format="HH:mm"
-                  clearIcon={null}
-                  disableClock={false}
-                  className="form-time-picker"
-                  value={splitDateTime(form.dates_end).time || null}
-                  onChange={(v) => set("dates_end", joinDateTime(splitDateTime(form.dates_end).date, v || "00:00"))}
+                  label="Basic time picker"
+                  ampm={false}
+                  value={timeToDayjs(splitDateTime(form.dates_end).time)}
+                  onChange={(v) => set("dates_end", joinDateTime(splitDateTime(form.dates_end).date, dayjsToTime(v)))}
+                  slotProps={{ textField: { required: true, fullWidth: true } }}
+                  sx={{ flex: 1 }}
                 />
               </div>
             </div>
@@ -618,6 +610,7 @@ export default function EventForm({ initial, onSubmit }: Props) {
           </button>
         </div>
       </form>
+      </LocalizationProvider>
     </>
   );
 }
