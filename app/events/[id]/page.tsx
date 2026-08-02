@@ -40,16 +40,28 @@ export default function EditEventPage() {
             </div>
           ) : event ? (
             <>
-              <div style={{ marginBottom: "1.75rem" }}>
-                <h1 style={{
-                  fontFamily: "var(--font-cormorant, serif)",
-                  fontSize: "1.85rem", fontWeight: 600, lineHeight: 1, letterSpacing: "-0.01em",
-                }}>
-                  Edit event
-                </h1>
-                <p style={{ color: "var(--ink-4)", fontFamily: "var(--font-mono, monospace)", fontSize: "0.8rem", marginTop: "0.35rem" }}>
-                  {event.slug}
-                </p>
+              <div style={{ marginBottom: "1.75rem", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <div>
+                  <h1 style={{
+                    fontFamily: "var(--font-cormorant, serif)",
+                    fontSize: "1.85rem", fontWeight: 600, lineHeight: 1, letterSpacing: "-0.01em",
+                  }}>
+                    Edit event
+                  </h1>
+                  <p style={{ color: "var(--ink-4)", fontFamily: "var(--font-mono, monospace)", fontSize: "0.8rem", marginTop: "0.35rem" }}>
+                    {event.slug}
+                  </p>
+                </div>
+                <Link
+                  href={`/events/${event.id}/preview`}
+                  style={{
+                    fontSize: "0.78rem", color: "var(--ink-3)",
+                    border: "1px solid var(--border)", borderRadius: "var(--radius-sm)",
+                    padding: "0.4rem 0.85rem", textDecoration: "none",
+                  }}
+                >
+                  Preview →
+                </Link>
               </div>
               <EventForm
                 initial={event}
