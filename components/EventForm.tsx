@@ -2,6 +2,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import TimePicker from "react-time-picker";
+import "react-time-picker/dist/TimePicker.css";
+import "react-clock/dist/Clock.css";
 import LocaleField from "./LocaleField";
 import ImageUpload from "./ImageUpload";
 import GalleryUpload from "./GalleryUpload";
@@ -33,17 +36,6 @@ function joinDateTime(date: string, time: string): string {
   return `${date}T${time || "00:00"}`;
 }
 
-const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
-const MINUTE_OPTIONS = Array.from({ length: 12 }, (_, i) => String(i * 5).padStart(2, "0"));
-
-function splitTime(t: string): { hour: string; minute: string } {
-  const [hour, minute] = t.split(":");
-  return { hour: hour ?? "00", minute: minute ?? "00" };
-}
-
-function joinTime(hour: string, minute: string): string {
-  return `${hour}:${minute}`;
-}
 
 function toSlug(title: string): string {
   return title
@@ -305,6 +297,26 @@ export default function EventForm({ initial, onSubmit }: Props) {
           box-shadow: 0 0 0 3px rgba(10,10,10,0.06);
         }
         .form-hint { font-size: 0.71rem; color: var(--ink-4); margin-top: 0.28rem; }
+        .form-time-picker { flex: 1; }
+        .form-time-picker.react-time-picker { display: flex; }
+        .form-time-picker .react-time-picker__wrapper {
+          border: 1px solid var(--border);
+          border-radius: var(--radius-sm);
+          padding: 0.55rem 0.75rem;
+          background: var(--surface);
+          color: var(--ink);
+          font-family: inherit;
+          font-size: 0.875rem;
+        }
+        .form-time-picker:focus-within .react-time-picker__wrapper {
+          border-color: var(--ink);
+          box-shadow: 0 0 0 3px rgba(10,10,10,0.06);
+        }
+        .form-time-picker .react-time-picker__clock {
+          border-radius: var(--radius-sm);
+          box-shadow: var(--shadow, 0 8px 24px rgba(0,0,0,0.12));
+          z-index: 20;
+        }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
         .form-btn-primary {
@@ -419,30 +431,14 @@ export default function EventForm({ initial, onSubmit }: Props) {
                   className="form-input"
                   style={{ flex: 1 }}
                 />
-                <select
-                  required
-                  value={splitTime(splitDateTime(form.dates_start).time).hour}
-                  onChange={(e) => {
-                    const { date, time } = { date: splitDateTime(form.dates_start).date, time: splitDateTime(form.dates_start).time };
-                    set("dates_start", joinDateTime(date, joinTime(e.target.value, splitTime(time).minute)));
-                  }}
-                  className="form-select"
-                  style={{ flex: 1 }}
-                >
-                  {HOUR_OPTIONS.map((h) => <option key={h} value={h}>{h}</option>)}
-                </select>
-                <select
-                  required
-                  value={splitTime(splitDateTime(form.dates_start).time).minute}
-                  onChange={(e) => {
-                    const { date, time } = { date: splitDateTime(form.dates_start).date, time: splitDateTime(form.dates_start).time };
-                    set("dates_start", joinDateTime(date, joinTime(splitTime(time).hour, e.target.value)));
-                  }}
-                  className="form-select"
-                  style={{ flex: 1 }}
-                >
-                  {MINUTE_OPTIONS.map((m) => <option key={m} value={m}>{m}</option>)}
-                </select>
+                <TimePicker
+                  format="HH:mm"
+                  clearIcon={null}
+                  disableClock={false}
+                  className="form-time-picker"
+                  value={splitDateTime(form.dates_start).time || null}
+                  onChange={(v) => set("dates_start", joinDateTime(splitDateTime(form.dates_start).date, v || "00:00"))}
+                />
               </div>
             </div>
             <div style={field}>
@@ -456,30 +452,14 @@ export default function EventForm({ initial, onSubmit }: Props) {
                   className="form-input"
                   style={{ flex: 1 }}
                 />
-                <select
-                  required
-                  value={splitTime(splitDateTime(form.dates_end).time).hour}
-                  onChange={(e) => {
-                    const { date, time } = { date: splitDateTime(form.dates_end).date, time: splitDateTime(form.dates_end).time };
-                    set("dates_end", joinDateTime(date, joinTime(e.target.value, splitTime(time).minute)));
-                  }}
-                  className="form-select"
-                  style={{ flex: 1 }}
-                >
-                  {HOUR_OPTIONS.map((h) => <option key={h} value={h}>{h}</option>)}
-                </select>
-                <select
-                  required
-                  value={splitTime(splitDateTime(form.dates_end).time).minute}
-                  onChange={(e) => {
-                    const { date, time } = { date: splitDateTime(form.dates_end).date, time: splitDateTime(form.dates_end).time };
-                    set("dates_end", joinDateTime(date, joinTime(splitTime(time).hour, e.target.value)));
-                  }}
-                  className="form-select"
-                  style={{ flex: 1 }}
-                >
-                  {MINUTE_OPTIONS.map((m) => <option key={m} value={m}>{m}</option>)}
-                </select>
+                <TimePicker
+                  format="HH:mm"
+                  clearIcon={null}
+                  disableClock={false}
+                  className="form-time-picker"
+                  value={splitDateTime(form.dates_end).time || null}
+                  onChange={(v) => set("dates_end", joinDateTime(splitDateTime(form.dates_end).date, v || "00:00"))}
+                />
               </div>
             </div>
           </div>
