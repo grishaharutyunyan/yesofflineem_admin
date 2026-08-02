@@ -2,10 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { TimePicker } from "@mui/x-date-pickers/TimePicker";
-import dayjs, { type Dayjs } from "dayjs";
+import { DatePickerInput, TimePickerInput, DateRangePickerInput, TimeRangePickerInput } from "./DateTimePicker";
 import LocaleField from "./LocaleField";
 import ImageUpload from "./ImageUpload";
 import GalleryUpload from "./GalleryUpload";
@@ -28,24 +25,15 @@ function fromDatetimeLocal(s: string): string {
 }
 
 function splitDateTime(v: string): { date: string; time: string } {
+  if (!v) return { date: "", time: "09:00" };
   const [date, time] = v.split("T");
-  return { date: date ?? "", time: time ?? "" };
+  return { date: date ?? "", time: (time ?? "").slice(0, 5) || "09:00" };
 }
 
 function joinDateTime(date: string, time: string): string {
   if (!date) return "";
-  return `${date}T${time || "00:00"}`;
-}
-
-function timeToDayjs(time: string): Dayjs | null {
-  if (!time) return null;
-  const [h, m] = time.split(":").map(Number);
-  return dayjs().hour(h || 0).minute(m || 0).second(0);
-}
-
-function dayjsToTime(value: Dayjs | null): string {
-  if (!value) return "00:00";
-  return value.format("HH:mm");
+  const formattedTime = time ? time.slice(0, 5) : "09:00";
+  return `${date}T${formattedTime}`;
 }
 
 function toSlug(title: string): string {
@@ -340,7 +328,6 @@ export default function EventForm({ initial, onSubmit }: Props) {
         }
       `}</style>
 
-      <LocalizationProvider dateAdapter={AdapterDayjs}>
       <form onSubmit={handleSubmit}>
 
         {/* 01 Basic */}
@@ -411,46 +398,36 @@ export default function EventForm({ initial, onSubmit }: Props) {
 
         {/* 02 Dates */}
         <SectionCard number="02" title="Dates">
-          <div className="form-row">
+          <div className="form-row" style={{ gap: "1.25rem" }}>
             <div style={field}>
-              <label style={labelStyle}>Start date & time</label>
-              <div style={{ display: "flex", gap: "0.5rem" }}>
-                <input
-                  type="date"
+              <div style={{ display: "flex", gap: "0.75rem" }}>
+                <DatePickerInput
+                  label="Start Date"
                   required
                   value={splitDateTime(form.dates_start).date}
-                  onChange={(e) => set("dates_start", joinDateTime(e.target.value, splitDateTime(form.dates_start).time))}
-                  className="form-input"
-                  style={{ flex: 1 }}
+                  onChange={(d) => set("dates_start", joinDateTime(d, splitDateTime(form.dates_start).time))}
                 />
-                <TimePicker
-                  label="Basic time picker"
-                  ampm={false}
-                  value={timeToDayjs(splitDateTime(form.dates_start).time)}
-                  onChange={(v) => set("dates_start", joinDateTime(splitDateTime(form.dates_start).date, dayjsToTime(v)))}
-                  slotProps={{ textField: { required: true, fullWidth: true } }}
-                  sx={{ flex: 1 }}
+                <TimePickerInput
+                  label="Start Time"
+                  required
+                  value={splitDateTime(form.dates_start).time}
+                  onChange={(t) => set("dates_start", joinDateTime(splitDateTime(form.dates_start).date, t))}
                 />
               </div>
             </div>
             <div style={field}>
-              <label style={labelStyle}>End date & time</label>
-              <div style={{ display: "flex", gap: "0.5rem" }}>
-                <input
-                  type="date"
+              <div style={{ display: "flex", gap: "0.75rem" }}>
+                <DatePickerInput
+                  label="End Date"
                   required
                   value={splitDateTime(form.dates_end).date}
-                  onChange={(e) => set("dates_end", joinDateTime(e.target.value, splitDateTime(form.dates_end).time))}
-                  className="form-input"
-                  style={{ flex: 1 }}
+                  onChange={(d) => set("dates_end", joinDateTime(d, splitDateTime(form.dates_end).time))}
                 />
-                <TimePicker
-                  label="Basic time picker"
-                  ampm={false}
-                  value={timeToDayjs(splitDateTime(form.dates_end).time)}
-                  onChange={(v) => set("dates_end", joinDateTime(splitDateTime(form.dates_end).date, dayjsToTime(v)))}
-                  slotProps={{ textField: { required: true, fullWidth: true } }}
-                  sx={{ flex: 1 }}
+                <TimePickerInput
+                  label="End Time"
+                  required
+                  value={splitDateTime(form.dates_end).time}
+                  onChange={(t) => set("dates_end", joinDateTime(splitDateTime(form.dates_end).date, t))}
                 />
               </div>
             </div>
@@ -610,7 +587,6 @@ export default function EventForm({ initial, onSubmit }: Props) {
           </button>
         </div>
       </form>
-      </LocalizationProvider>
     </>
   );
 }

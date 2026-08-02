@@ -2,6 +2,7 @@
 import { useState } from "react";
 import type { CSSProperties } from "react";
 import type { ScheduleItem } from "@/lib/api";
+import { DatePickerInput, TimePickerInput, TimeRangePickerInput } from "./DateTimePicker";
 
 interface Props {
   value: ScheduleItem[];
@@ -213,33 +214,24 @@ export default function ScheduleBuilder({ value, onChange }: Props) {
                 />
               ) : (
                 <>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: "0.4rem", alignItems: "center" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem", alignItems: "flex-start" }}>
                     {/* Date */}
-                    <input
-                      type="date"
+                    <DatePickerInput
+                      label="Date"
                       value={parsed.date}
-                      onChange={(e) => setTimeParts(idx, e.target.value, parsed.start, parsed.end)}
-                      style={inp}
-                      onFocus={(e) => (e.currentTarget.style.borderColor = "var(--ink)")}
-                      onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
+                      onChange={(d) => setTimeParts(idx, d, parsed.start, parsed.end)}
                     />
                     {/* Start time */}
-                    <input
-                      type="time"
+                    <TimePickerInput
+                      label="Start Time"
                       value={parsed.start}
-                      onChange={(e) => setTimeParts(idx, parsed.date, e.target.value, parsed.end)}
-                      style={{ ...inp, width: "auto", minWidth: 110 }}
-                      onFocus={(e) => (e.currentTarget.style.borderColor = "var(--ink)")}
-                      onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
+                      onChange={(t) => setTimeParts(idx, parsed.date, t, parsed.end)}
                     />
                     {/* End time */}
-                    <input
-                      type="time"
+                    <TimePickerInput
+                      label="End Time"
                       value={parsed.end}
-                      onChange={(e) => setTimeParts(idx, parsed.date, parsed.start, e.target.value)}
-                      style={{ ...inp, width: "auto", minWidth: 110 }}
-                      onFocus={(e) => (e.currentTarget.style.borderColor = "var(--ink)")}
-                      onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
+                      onChange={(t) => setTimeParts(idx, parsed.date, parsed.start, t)}
                     />
                   </div>
                   {item.time && (
