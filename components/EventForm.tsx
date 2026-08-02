@@ -23,6 +23,16 @@ function fromDatetimeLocal(s: string): string {
   return s.replace("T", " ");
 }
 
+function splitDateTime(v: string): { date: string; time: string } {
+  const [date, time] = v.split("T");
+  return { date: date ?? "", time: time ?? "" };
+}
+
+function joinDateTime(date: string, time: string): string {
+  if (!date) return "";
+  return `${date}T${time || "00:00"}`;
+}
+
 function toSlug(title: string): string {
   return title
     .toLowerCase()
@@ -304,7 +314,8 @@ export default function EventForm({ initial, onSubmit }: Props) {
           cursor: pointer; transition: all 0.14s;
         }
         .form-btn-ghost:hover { border-color: var(--ink-2); color: var(--ink); }
-        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator {
           opacity: 0.5; cursor: pointer;
         }
         @media (max-width: 768px) {
@@ -388,23 +399,45 @@ export default function EventForm({ initial, onSubmit }: Props) {
           <div className="form-row">
             <div style={field}>
               <label style={labelStyle}>Start date & time</label>
-              <input
-                type="datetime-local"
-                required
-                value={form.dates_start}
-                onChange={(e) => set("dates_start", e.target.value)}
-                className="form-input"
-              />
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                <input
+                  type="date"
+                  required
+                  value={splitDateTime(form.dates_start).date}
+                  onChange={(e) => set("dates_start", joinDateTime(e.target.value, splitDateTime(form.dates_start).time))}
+                  className="form-input"
+                  style={{ flex: 1 }}
+                />
+                <input
+                  type="time"
+                  required
+                  value={splitDateTime(form.dates_start).time}
+                  onChange={(e) => set("dates_start", joinDateTime(splitDateTime(form.dates_start).date, e.target.value))}
+                  className="form-input"
+                  style={{ flex: 1 }}
+                />
+              </div>
             </div>
             <div style={field}>
               <label style={labelStyle}>End date & time</label>
-              <input
-                type="datetime-local"
-                required
-                value={form.dates_end}
-                onChange={(e) => set("dates_end", e.target.value)}
-                className="form-input"
-              />
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                <input
+                  type="date"
+                  required
+                  value={splitDateTime(form.dates_end).date}
+                  onChange={(e) => set("dates_end", joinDateTime(e.target.value, splitDateTime(form.dates_end).time))}
+                  className="form-input"
+                  style={{ flex: 1 }}
+                />
+                <input
+                  type="time"
+                  required
+                  value={splitDateTime(form.dates_end).time}
+                  onChange={(e) => set("dates_end", joinDateTime(splitDateTime(form.dates_end).date, e.target.value))}
+                  className="form-input"
+                  style={{ flex: 1 }}
+                />
+              </div>
             </div>
           </div>
         </SectionCard>
