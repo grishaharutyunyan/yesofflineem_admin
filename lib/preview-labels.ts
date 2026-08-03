@@ -34,7 +34,7 @@ export const DETAIL_LABELS: Record<Lang, {
   back: string; dateTime: string; location: string; groupSize: string; guests: string;
   availability: string; free: string; priceNote: string; reserve: string; soldOut: string;
   about: string; included: string; schedule: string; mapTitle: string; openMaps: string;
-  priceUnit: string; viewReserve: string;
+  priceUnit: string; viewReserve: string; organizerNote: string; yourHost: string;
   spotsLeft: (n: number) => string;
 }> = {
   en: {
@@ -42,7 +42,8 @@ export const DETAIL_LABELS: Record<Lang, {
     guests: "participants", availability: "Availability", free: "Free", priceNote: "AMD / person",
     reserve: "Reservation", soldOut: "Sold out", about: "About the experience", included: "What's Included",
     schedule: "Schedule", mapTitle: "Map —", openMaps: "Open in Maps ↗",
-    priceUnit: "AMD / person", viewReserve: "view and reserve",
+    priceUnit: "AMD / person", viewReserve: "view and reserve", organizerNote: "A note from the organizer",
+    yourHost: "Your host",
     spotsLeft: (n) => `Only ${n} spots remaining`,
   },
   hy: {
@@ -50,7 +51,8 @@ export const DETAIL_LABELS: Record<Lang, {
     guests: "հոգի", availability: "Հասանելիություն", free: "Անվճար", priceNote: "ՀՀ դրամ / անձ",
     reserve: "Ամրագրում", soldOut: "Ամբողջությամբ վաճառված", about: "Փորձառության մասին",
     included: "Ինչ է ներառված", schedule: "Ժամանակացույց", mapTitle: "Քարտեզ —", openMaps: "Բացել Maps-ում ↗",
-    priceUnit: "ՀՀ դրամ / անձ", viewReserve: "Դիտել և ամրագրել",
+    priceUnit: "ՀՀ դրամ / անձ", viewReserve: "Դիտել և ամրագրել", organizerNote: "Կազմակերպչի խոսք",
+    yourHost: "Ձեր կազմակերպիչը",
     spotsLeft: (n) => `${n} տեղ է մնացել`,
   },
 };

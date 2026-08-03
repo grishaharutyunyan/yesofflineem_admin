@@ -177,7 +177,7 @@ export default function EventPreviewContent({ view, lang }: { view: EventView; l
               {view.host && (
                 <>
                   <h2 style={{ fontFamily: "var(--font-cormorant)", fontSize: "1.85rem", fontWeight: 500, color: "#0a0a0a", marginBottom: "1.2rem", letterSpacing: "-0.01em" }}>
-                    {view.hostSectionTitle}
+                    {t.yourHost}
                   </h2>
                   <div style={{ display: "flex", alignItems: "center", gap: "1rem", background: "#fff", border: "1px solid #e8e8e8", padding: "1.4rem" }}>
                     <div style={{ width: 56, height: 56, borderRadius: "50%", flexShrink: 0, background: view.hostImageUrl ? `url(${view.hostImageUrl}) center/cover` : "#d4d4d4" }} />
@@ -189,22 +189,22 @@ export default function EventPreviewContent({ view, lang }: { view: EventView; l
                 </>
               )}
 
-              {(view.goodToKnowTitle || view.goodToKnowText || view.goodToKnowTextTitle) && (
+              {(view.goodToKnowTitle || view.goodToKnowText) && (
                 <div style={{ marginTop: "2rem", background: "#f5f5f5", padding: "1.5rem" }}>
                   {view.goodToKnowTitle && (
                     <div style={{ fontFamily: "var(--font-sans)", fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "#888888", fontWeight: 500, marginBottom: "0.8rem" }}>
                       {view.goodToKnowTitle}
                     </div>
                   )}
-                  {view.goodToKnowTextTitle && (
-                    <div style={{ fontFamily: "var(--font-sans)", fontSize: "0.86rem", color: "#4a4a4a", lineHeight: 1.7, fontWeight: 500, marginBottom: "0.8rem" }}>
-                      {view.goodToKnowTextTitle}
-                    </div>
-                  )}
                   {view.goodToKnowText && (
-                    <div style={{ fontFamily: "var(--font-sans)", fontSize: "0.86rem", color: "#4a4a4a", lineHeight: 1.7, fontWeight: 300 }}>
-                      {view.goodToKnowText}
-                    </div>
+                    <>
+                      <div style={{ fontFamily: "var(--font-sans)", fontSize: "0.86rem", color: "#4a4a4a", lineHeight: 1.7, fontWeight: 500, marginBottom: "0.8rem" }}>
+                        {t.organizerNote}
+                      </div>
+                      <div style={{ fontFamily: "var(--font-sans)", fontSize: "0.86rem", color: "#4a4a4a", lineHeight: 1.7, fontWeight: 300 }}>
+                        {view.goodToKnowText}
+                      </div>
+                    </>
                   )}
                 </div>
               )}

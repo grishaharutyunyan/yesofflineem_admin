@@ -88,10 +88,8 @@ export interface EventView {
   cardImage: string | null;
   galleryImages: string[] | null;
   ctaLabel: string | null;
-  hostSectionTitle: string | null;
   goodToKnowTitle: string | null;
   goodToKnowText: string | null;
-  goodToKnowTextTitle: string | null;
 }
 
 export function toEventView(ev: ApiEvent, lang: Lang): EventView {
@@ -130,9 +128,7 @@ export function toEventView(ev: ApiEvent, lang: Lang): EventView {
     cardImage: ev.cardImageUrl,
     galleryImages: ev.galleryImageUrls,
     ctaLabel: ev.ctaLabel ? pickLocaleText(ev.ctaLabel, lang) : null,
-    hostSectionTitle: ev.hostSectionTitle ? pickLocaleText(ev.hostSectionTitle, lang) : null,
     goodToKnowTitle: ev.goodToKnowTitle ? pickLocaleText(ev.goodToKnowTitle, lang) : null,
     goodToKnowText: ev.goodToKnowText ? pickLocaleText(ev.goodToKnowText, lang) : null,
-    goodToKnowTextTitle: ev.goodToKnowTextTitle ? pickLocaleText(ev.goodToKnowTextTitle, lang) : null,
   };
 }

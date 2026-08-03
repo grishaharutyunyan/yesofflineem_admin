@@ -63,10 +63,8 @@ export type EventFormState = {
   maxCapacity: string; bookedCount: string; price: string;
   cardImageUrl: string; galleryUrls: string[];
   ctaLabel_en: string; ctaLabel_hy: string;
-  hostSectionTitle_en: string; hostSectionTitle_hy: string;
   goodToKnowTitle_en: string; goodToKnowTitle_hy: string;
   goodToKnowText_en: string; goodToKnowText_hy: string;
-  goodToKnowTextTitle_en: string; goodToKnowTextTitle_hy: string;
 };
 
 export function eventToForm(ev: ApiEvent): EventFormState {
@@ -102,14 +100,10 @@ export function eventToForm(ev: ApiEvent): EventFormState {
     galleryUrls: ev.galleryImageUrls ?? [],
     ctaLabel_en: ev.ctaLabel?.en ?? "",
     ctaLabel_hy: ev.ctaLabel?.hy ?? "",
-    hostSectionTitle_en: ev.hostSectionTitle?.en ?? "",
-    hostSectionTitle_hy: ev.hostSectionTitle?.hy ?? "",
     goodToKnowTitle_en: ev.goodToKnowTitle?.en ?? "",
     goodToKnowTitle_hy: ev.goodToKnowTitle?.hy ?? "",
     goodToKnowText_en: ev.goodToKnowText?.en ?? "",
     goodToKnowText_hy: ev.goodToKnowText?.hy ?? "",
-    goodToKnowTextTitle_en: ev.goodToKnowTextTitle?.en ?? "",
-    goodToKnowTextTitle_hy: ev.goodToKnowTextTitle?.hy ?? "",
   };
 }
 
@@ -130,10 +124,8 @@ export function emptyForm(): EventFormState {
     maxCapacity: "10", bookedCount: "0", price: "0",
     cardImageUrl: "", galleryUrls: [],
     ctaLabel_en: "", ctaLabel_hy: "",
-    hostSectionTitle_en: "", hostSectionTitle_hy: "",
     goodToKnowTitle_en: "", goodToKnowTitle_hy: "",
     goodToKnowText_en: "", goodToKnowText_hy: "",
-    goodToKnowTextTitle_en: "", goodToKnowTextTitle_hy: "",
   };
 }
 
@@ -166,17 +158,11 @@ export function formToDto(f: EventFormState) {
     ctaLabel: (f.ctaLabel_en || f.ctaLabel_hy)
       ? { en: f.ctaLabel_en, hy: f.ctaLabel_hy }
       : null,
-    hostSectionTitle: (f.hostSectionTitle_en || f.hostSectionTitle_hy)
-      ? { en: f.hostSectionTitle_en, hy: f.hostSectionTitle_hy }
-      : null,
     goodToKnowTitle: (f.goodToKnowTitle_en || f.goodToKnowTitle_hy)
       ? { en: f.goodToKnowTitle_en, hy: f.goodToKnowTitle_hy }
       : null,
     goodToKnowText: (f.goodToKnowText_en || f.goodToKnowText_hy)
       ? { en: f.goodToKnowText_en, hy: f.goodToKnowText_hy }
-      : null,
-    goodToKnowTextTitle: (f.goodToKnowTextTitle_en || f.goodToKnowTextTitle_hy)
-      ? { en: f.goodToKnowTextTitle_en, hy: f.goodToKnowTextTitle_hy }
       : null,
   };
 }
@@ -477,13 +463,6 @@ export default function EventForm({ initial, onSubmit }: Props) {
 
         {/* 06 Host */}
         <SectionCard number="06" title="Host">
-          <LocaleField
-            label="Section title"
-            enValue={form.hostSectionTitle_en}
-            hyValue={form.hostSectionTitle_hy}
-            onChange={(l, v) => setLocale("hostSectionTitle", l, v)}
-            hint='default: "Your host"'
-          />
           <HostEditor
             value={form.host}
             onChange={(v) => setForm((p) => ({ ...p, host: v }))}
@@ -550,12 +529,6 @@ export default function EventForm({ initial, onSubmit }: Props) {
             onChange={(l, v) => setLocale("goodToKnowText", l, v)}
             multiline
             rows={3}
-          />
-          <LocaleField
-            label="Body text title"
-            enValue={form.goodToKnowTextTitle_en}
-            hyValue={form.goodToKnowTextTitle_hy}
-            onChange={(l, v) => setLocale("goodToKnowTextTitle", l, v)}
           />
         </SectionCard>
 
