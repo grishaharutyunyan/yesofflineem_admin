@@ -5,10 +5,10 @@ import type { Lang } from "@/lib/event-i18n";
 import { DETAIL_LABELS, FALLBACK_GALLERY } from "@/lib/preview-labels";
 import { PREVIEW_BANNER_HEIGHT } from "./PreviewBanner";
 import { PREVIEW_NAV_HEIGHT } from "./PreviewNav";
+import { renderRichText } from "@/lib/richText";
 
 export default function EventPreviewContent({ view, lang }: { view: EventView; lang: Lang }) {
   const t = DETAIL_LABELS[lang];
-  const paragraphs = view.longDesc.split("<PARA>").map((p) => p.trim()).filter(Boolean);
   const galleryImgs = view.galleryImages?.length ? view.galleryImages : FALLBACK_GALLERY;
   const filled = view.guests - view.spotsLeft;
   const pct = view.guests > 0 ? Math.round((filled / view.guests) * 100) : 0;
@@ -121,9 +121,11 @@ export default function EventPreviewContent({ view, lang }: { view: EventView; l
               <h2 style={{ fontFamily: "var(--font-cormorant)", fontSize: "1.85rem", fontWeight: 500, color: "#0a0a0a", marginBottom: "1.2rem", letterSpacing: "-0.01em" }}>
                 {t.about}
               </h2>
-              {paragraphs.map((p, i) => (
-                <p key={i} style={{ fontFamily: "var(--font-sans)", fontSize: "0.95rem", color: "#4a4a4a", lineHeight: 1.85, fontWeight: 300, marginBottom: "1rem" }}>{p}</p>
-              ))}
+              <div
+                className="long-desc-body"
+                style={{ fontFamily: "var(--font-sans)", fontSize: "0.95rem", color: "#4a4a4a", lineHeight: 1.85, fontWeight: 300 }}
+                dangerouslySetInnerHTML={{ __html: renderRichText(view.longDesc) }}
+              />
 
               <h2 style={{ fontFamily: "var(--font-cormorant)", fontSize: "1.85rem", fontWeight: 500, color: "#0a0a0a", marginBottom: "1.2rem", letterSpacing: "-0.01em", marginTop: "2.5rem" }}>
                 {t.included}
@@ -202,9 +204,11 @@ export default function EventPreviewContent({ view, lang }: { view: EventView; l
                     </div>
                   )}
                   {view.goodToKnowText && (
-                    <div style={{ fontFamily: "var(--font-sans)", fontSize: "0.86rem", color: "#4a4a4a", lineHeight: 1.7, fontWeight: 300 }}>
-                      {view.goodToKnowText}
-                    </div>
+                    <div
+                      className="gtk-body"
+                      style={{ fontFamily: "var(--font-sans)", fontSize: "0.86rem", color: "#4a4a4a", lineHeight: 1.7, fontWeight: 300 }}
+                      dangerouslySetInnerHTML={{ __html: renderRichText(view.goodToKnowText) }}
+                    />
                   )}
                 </div>
               )}
@@ -212,6 +216,30 @@ export default function EventPreviewContent({ view, lang }: { view: EventView; l
           </div>
         </div>
       </main>
+      <style jsx>{`
+        .gtk-body :global(ul),
+        .gtk-body :global(ol) {
+          margin: 0.4rem 0;
+          padding-left: 1.2rem;
+        }
+        .gtk-body :global(p) {
+          margin: 0 0 0.6rem 0;
+        }
+        .gtk-body :global(p:last-child) {
+          margin-bottom: 0;
+        }
+        .long-desc-body :global(ul),
+        .long-desc-body :global(ol) {
+          margin: 0 0 1rem 0;
+          padding-left: 1.3rem;
+        }
+        .long-desc-body :global(p) {
+          margin: 0 0 1rem 0;
+        }
+        .long-desc-body :global(p:last-child) {
+          margin-bottom: 0;
+        }
+      `}</style>
     </>
   );
 }

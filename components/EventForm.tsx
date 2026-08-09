@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { DatePickerInput, TimePickerInput, DateRangePickerInput, TimeRangePickerInput } from "./DateTimePicker";
 import LocaleField from "./LocaleField";
+import RichTextField from "./RichTextField";
 import ImageUpload from "./ImageUpload";
 import GalleryUpload from "./GalleryUpload";
 import ScheduleBuilder from "./ScheduleBuilder";
@@ -436,7 +437,7 @@ export default function EventForm({ initial, onSubmit }: Props) {
         {/* 04 Content */}
         <SectionCard number="04" title="Content">
           <LocaleField label="Short description" enValue={form.shortDescription_en} hyValue={form.shortDescription_hy} onChange={(l, v) => setLocale("shortDescription", l, v)} multiline rows={3} />
-          <LocaleField label="Long description" enValue={form.longDescription_en} hyValue={form.longDescription_hy} onChange={(l, v) => setLocale("longDescription", l, v)} multiline rows={6} hint="Use <PARA> for paragraph breaks" />
+          <RichTextField label="Long description" enValue={form.longDescription_en} hyValue={form.longDescription_hy} onChange={(l, v) => setLocale("longDescription", l, v)} rows={6} hint="Leave a blank line between paragraphs" />
 
           <div style={{ marginTop: "0.85rem" }}>
             <label style={labelStyle}>What&apos;s Included</label>
@@ -522,13 +523,11 @@ export default function EventForm({ initial, onSubmit }: Props) {
             onChange={(l, v) => setLocale("goodToKnowTitle", l, v)}
             hint='e.g. "Good to know"'
           />
-          <LocaleField
+          <RichTextField
             label="Body text"
             enValue={form.goodToKnowText_en}
             hyValue={form.goodToKnowText_hy}
             onChange={(l, v) => setLocale("goodToKnowText", l, v)}
-            multiline
-            rows={3}
           />
         </SectionCard>
 
