@@ -2,7 +2,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { clearAuth, getUser } from "@/lib/auth";
+import { getUser } from "@/lib/auth";
+import { logout } from "@/lib/api";
 
 function DashboardIcon() {
   return (
@@ -316,7 +317,7 @@ export default function Nav() {
           </div>
           <button
             className="signout-btn"
-            onClick={() => { clearAuth(); router.push("/login"); }}
+            onClick={() => { logout().then(() => router.push("/login")); }}
             title="Sign out"
           >
             <SignOutIcon />

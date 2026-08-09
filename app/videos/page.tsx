@@ -4,7 +4,6 @@ import Link from "next/link";
 import AuthGuard from "@/components/AuthGuard";
 import Nav from "@/components/Nav";
 import { getVideos, deleteVideo, type ApiVideo } from "@/lib/api";
-import { getToken } from "@/lib/auth";
 
 export default function VideosPage() {
   const [videos, setVideos] = useState<ApiVideo[]>([]);
@@ -13,7 +12,7 @@ export default function VideosPage() {
 
   async function load() {
     setLoading(true);
-    const data = await getVideos(getToken()!);
+    const data = await getVideos();
     setVideos(data.items);
     setLoading(false);
   }
@@ -24,7 +23,7 @@ export default function VideosPage() {
     if (!confirm(`Delete "${title}"?`)) return;
     setDeleting(id);
     try {
-      await deleteVideo(getToken()!, id);
+      await deleteVideo(id);
       setVideos((prev) => prev.filter((v) => v.id !== id));
     } finally {
       setDeleting(null);

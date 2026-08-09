@@ -9,7 +9,6 @@ import PreviewFooter from "@/components/preview/PreviewFooter";
 import EventPreviewContent from "@/components/preview/EventPreviewContent";
 import EventCardPreview from "@/components/preview/EventCardPreview";
 import { getEvent, type ApiEvent } from "@/lib/api";
-import { getToken } from "@/lib/auth";
 import { toEventView } from "@/lib/event-view";
 import type { Lang } from "@/lib/event-i18n";
 
@@ -31,7 +30,7 @@ export default function EventPreviewPage() {
   const [lang, setLang] = useState<Lang>("en");
 
   useEffect(() => {
-    getEvent(getToken()!, Number(id))
+    getEvent(Number(id))
       .then(setEvent)
       .catch((e) => setErr(e.message))
       .finally(() => setLoading(false));

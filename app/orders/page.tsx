@@ -4,7 +4,6 @@ import Link from "next/link";
 import AuthGuard from "@/components/AuthGuard";
 import Nav from "@/components/Nav";
 import { getOrders, exportOrders, currencyLabel, type ApiOrder } from "@/lib/api";
-import { getToken } from "@/lib/auth";
 
 const STATUS_FILTERS = ["all", "pending", "paid", "failed", "refunded", "reversed"];
 
@@ -35,7 +34,7 @@ export default function OrdersPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await getOrders(getToken()!, buildQuery(status, search));
+      const data = await getOrders(buildQuery(status, search));
       setOrders(data.items);
       setTotal(data.count);
     } catch (err: unknown) {
@@ -53,7 +52,7 @@ export default function OrdersPage() {
 
   async function handleExport() {
     try {
-      const blob = await exportOrders(getToken()!, buildQuery(status, search));
+      const blob = await exportOrders(buildQuery(status, search));
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;

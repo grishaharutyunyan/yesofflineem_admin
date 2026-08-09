@@ -4,7 +4,6 @@ import Link from "next/link";
 import AuthGuard from "@/components/AuthGuard";
 import Nav from "@/components/Nav";
 import { getEvents, deleteEvent, type ApiEvent } from "@/lib/api";
-import { getToken } from "@/lib/auth";
 
 const STATUS_CONFIG: Record<string, { bg: string; text: string; dot: string }> = {
   active:   { bg: "var(--success-bg)",  text: "var(--success)",  dot: "var(--success)" },
@@ -28,9 +27,8 @@ export default function EventsPage() {
     setLoading(true);
     setLoadError(null);
     try {
-      const key = getToken()!;
       const params = filter !== "all" ? `status=${filter}` : "";
-      const data = await getEvents(key, params);
+      const data = await getEvents(params);
       setEvents(data.items);
       setTotal(data.count);
     } catch (err: unknown) {
@@ -53,7 +51,7 @@ export default function EventsPage() {
     setDeleting(id);
     setDeleteError(null);
     try {
-      await deleteEvent(getToken()!, id);
+      await deleteEvent(id);
       setEvents((prev) => prev.filter((e) => e.id !== id));
       setTotal((t) => t - 1);
     } catch (err: unknown) {

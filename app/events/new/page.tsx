@@ -3,7 +3,6 @@ import AuthGuard from "@/components/AuthGuard";
 import Nav from "@/components/Nav";
 import EventForm from "@/components/EventForm";
 import { createEvent } from "@/lib/api";
-import { getToken } from "@/lib/auth";
 import Link from "next/link";
 
 export default function NewEventPage() {
@@ -29,7 +28,7 @@ export default function NewEventPage() {
             </p>
           </div>
           <EventForm
-            onSubmit={(dto) => createEvent(getToken()!, dto).then(() => {})}
+            onSubmit={(dto) => createEvent(dto).then(() => {})}
           />
         </div>
       </main>

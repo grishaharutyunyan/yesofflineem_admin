@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import AuthGuard from "@/components/AuthGuard";
 import Nav from "@/components/Nav";
 import { getMessages, type ContactMessage } from "@/lib/api";
-import { getToken } from "@/lib/auth";
 
 type Tab = "contact" | "membership";
 
@@ -17,7 +16,7 @@ export default function MessagesPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await getMessages(getToken()!, source);
+      const data = await getMessages(source);
       setMessages(Array.isArray(data) ? data : []);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to load messages");

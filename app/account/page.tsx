@@ -1,8 +1,9 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { changePassword } from "@/lib/api";
-import { getToken, getUser, clearAuth } from "@/lib/auth";
+import AuthGuard from "@/components/AuthGuard";
+import { changePassword, logout } from "@/lib/api";
+import { getUser } from "@/lib/auth";
 
 export default function AccountPage() {
   const router = useRouter();
@@ -29,18 +30,15 @@ export default function AccountPage() {
       return;
     }
 
-    const token = getToken();
-    if (!token) { router.push("/login"); return; }
-
     setLoading(true);
     try {
-      await changePassword(token, currentPassword, newPassword);
+      await changePassword(currentPassword, newPassword);
       setSuccess(true);
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
       // Sign out after password change so the user re-authenticates
-      setTimeout(() => { clearAuth(); router.push("/login"); }, 1800);
+      setTimeout(() => { logout().then(() => router.push("/login")); }, 1800);
     } catch (ex: any) {
       setError(ex.message || "Failed to change password.");
     } finally {
@@ -49,7 +47,7 @@ export default function AccountPage() {
   }
 
   return (
-    <>
+    <AuthGuard>
       <style>{`
         .account-field {
           width: 100%;
@@ -206,6 +204,6 @@ export default function AccountPage() {
           </form>
         </div>
       </div>
-    </>
+    </AuthGuard>
   );
 }

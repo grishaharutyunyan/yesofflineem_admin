@@ -6,7 +6,6 @@ import AuthGuard from "@/components/AuthGuard";
 import Nav from "@/components/Nav";
 import VideoForm from "@/components/VideoForm";
 import { getVideo, updateVideo, type ApiVideo } from "@/lib/api";
-import { getToken } from "@/lib/auth";
 
 export default function EditVideoPage() {
   const { id } = useParams<{ id: string }>();
@@ -15,7 +14,7 @@ export default function EditVideoPage() {
   const [err, setErr] = useState("");
 
   useEffect(() => {
-    getVideo(getToken()!, Number(id))
+    getVideo(Number(id))
       .then(setVideo)
       .catch((e) => setErr(e.message))
       .finally(() => setLoading(false));
@@ -53,7 +52,7 @@ export default function EditVideoPage() {
               </div>
               <VideoForm
                 initial={video}
-                onSubmit={(dto) => updateVideo(getToken()!, video.id, dto).then(() => {})}
+                onSubmit={(dto) => updateVideo(video.id, dto).then(() => {})}
               />
             </>
           ) : null}

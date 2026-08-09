@@ -1,12 +1,13 @@
 "use client";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getToken } from "@/lib/auth";
 
 export default function Root() {
   const router = useRouter();
   useEffect(() => {
-    router.replace(getToken() ? "/dashboard" : "/login");
+    // AuthGuard on /dashboard attempts a silent refresh and redirects to
+    // /login itself if there's no valid session — no need to check here.
+    router.replace("/dashboard");
   }, [router]);
   return null;
 }

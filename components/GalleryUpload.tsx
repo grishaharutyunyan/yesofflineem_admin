@@ -1,7 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
 import { uploadImages } from "@/lib/api";
-import { getToken } from "@/lib/auth";
 
 interface Props {
   urls: string[];
@@ -19,7 +18,7 @@ export default function GalleryUpload({ urls, onChange }: Props) {
     setUploading(true);
     setErr("");
     try {
-      const newUrls = await uploadImages(getToken()!, files);
+      const newUrls = await uploadImages(files);
       onChange([...urls, ...newUrls]);
     } catch (ex: any) {
       setErr(ex.message);

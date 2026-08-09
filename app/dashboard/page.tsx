@@ -4,7 +4,6 @@ import AuthGuard from "@/components/AuthGuard";
 import Nav from "@/components/Nav";
 import EventParticipants from "@/components/EventParticipants";
 import { getEvents, type ApiEvent } from "@/lib/api";
-import { getToken } from "@/lib/auth";
 
 const STATUS_DOT: Record<string, string> = {
   active: "var(--success)",
@@ -22,7 +21,7 @@ export default function DashboardPage() {
     setLoading(true);
     setLoadError(null);
     try {
-      const data = await getEvents(getToken()!);
+      const data = await getEvents();
       setEvents(data.items);
     } catch (err: unknown) {
       setLoadError(err instanceof Error ? err.message : "Failed to load events");

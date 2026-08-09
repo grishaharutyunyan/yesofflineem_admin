@@ -3,7 +3,6 @@ import AuthGuard from "@/components/AuthGuard";
 import Nav from "@/components/Nav";
 import VideoForm from "@/components/VideoForm";
 import { createVideo } from "@/lib/api";
-import { getToken } from "@/lib/auth";
 import Link from "next/link";
 
 export default function NewVideoPage() {
@@ -29,7 +28,7 @@ export default function NewVideoPage() {
             </p>
           </div>
           <VideoForm
-            onSubmit={(dto) => createVideo(getToken()!, dto).then(() => {})}
+            onSubmit={(dto) => createVideo(dto).then(() => {})}
           />
         </div>
       </main>

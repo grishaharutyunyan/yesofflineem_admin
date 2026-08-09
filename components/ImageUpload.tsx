@@ -1,7 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
 import { uploadImage } from "@/lib/api";
-import { getToken } from "@/lib/auth";
 
 interface Props {
   label: string;
@@ -20,7 +19,7 @@ export default function ImageUpload({ label, value, onChange }: Props) {
     setUploading(true);
     setErr("");
     try {
-      const url = await uploadImage(getToken()!, file);
+      const url = await uploadImage(file);
       onChange(url);
     } catch (ex: any) {
       setErr(ex.message);

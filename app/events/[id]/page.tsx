@@ -6,7 +6,6 @@ import AuthGuard from "@/components/AuthGuard";
 import Nav from "@/components/Nav";
 import EventForm from "@/components/EventForm";
 import { getEvent, updateEvent, type ApiEvent } from "@/lib/api";
-import { getToken } from "@/lib/auth";
 
 export default function EditEventPage() {
   const { id } = useParams<{ id: string }>();
@@ -15,7 +14,7 @@ export default function EditEventPage() {
   const [err, setErr] = useState("");
 
   useEffect(() => {
-    getEvent(getToken()!, Number(id))
+    getEvent(Number(id))
       .then(setEvent)
       .catch((e) => setErr(e.message))
       .finally(() => setLoading(false));
@@ -67,7 +66,7 @@ export default function EditEventPage() {
               </div>
               <EventForm
                 initial={event}
-                onSubmit={(dto) => updateEvent(getToken()!, event.id, dto).then(() => {})}
+                onSubmit={(dto) => updateEvent(event.id, dto).then(() => {})}
               />
             </>
           ) : null}

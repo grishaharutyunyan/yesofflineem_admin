@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getOrders, type ApiOrder } from "@/lib/api";
-import { getToken } from "@/lib/auth";
 
 interface Person {
   key: string;
@@ -61,7 +60,7 @@ export default function EventParticipants({ eventId }: { eventId: number }) {
     let alive = true;
     setLoading(true);
     setError(null);
-    getOrders(getToken()!, `eventId=${eventId}&status=paid&range=${encodeURIComponent(JSON.stringify([1, 10000]))}`)
+    getOrders(`eventId=${eventId}&status=paid&range=${encodeURIComponent(JSON.stringify([1, 10000]))}`)
       .then((data) => { if (alive) setOrders(data.items); })
       .catch((e: unknown) => { if (alive) setError(e instanceof Error ? e.message : "Failed to load participants"); })
       .finally(() => { if (alive) setLoading(false); });

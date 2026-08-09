@@ -1,4 +1,92 @@
+import { clearAuth, getToken, setAuth, type AdminUser } from './auth';
+
 const BASE = '/api/admin';
+
+interface AuthPayload {
+  access_token: string;
+  user: AdminUser;
+}
+
+// Concurrent 401s during one silent-refresh should share a single in-flight
+// /auth/refresh call instead of each racing their own rotation.
+let refreshPromise: Promise<boolean> | null = null;
+
+async function refreshAccessToken(): Promise<boolean> {
+  if (!refreshPromise) {
+    refreshPromise = (async () => {
+      try {
+        const res = await fetch(`${BASE}/auth/refresh`, { method: 'POST', credentials: 'include' });
+        if (!res.ok) return false;
+        const data = (await res.json()) as AuthPayload;
+        setAuth(data.access_token, data.user);
+        return true;
+      } catch {
+        return false;
+      } finally {
+        refreshPromise = null;
+      }
+    })();
+  }
+  return refreshPromise;
+}
+
+// Attempts to (re)establish a session from the httpOnly refresh cookie —
+// used by AuthGuard on mount, since the access token itself never survives
+// a reload (it's memory-only, see lib/auth.ts).
+export const ensureSession = () => refreshAccessToken();
+
+export async function logout(): Promise<void> {
+  try {
+    await fetch(`${BASE}/auth/logout`, { method: 'POST', credentials: 'include' });
+  } finally {
+    clearAuth();
+  }
+}
+
+function handleUnauthorized(): never {
+  clearAuth();
+  if (typeof window !== 'undefined') {
+    window.location.href = '/login';
+  }
+  throw new Error('Session expired. Please log in again.');
+}
+
+async function readErrorCode(res: Response): Promise<string | undefined> {
+  try {
+    const text = await res.text();
+    return text ? (JSON.parse(text)?.code as string | undefined) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+// A page's own data-loading effect can fire before AuthGuard's silent
+// refresh has populated the in-memory token (React runs a component's
+// hooks on mount regardless of what JSX it conditionally returns), so a
+// 401 here can mean "no token yet" just as often as "token expired" —
+// both are worth one refresh-and-retry. Only a genuinely bad/invalid
+// token (wrong signature, wrong role) skips straight to logout.
+const RETRYABLE_401_CODES = new Set(['ACCESS_TOKEN_EXPIRED', 'ACCESS_TOKEN_MISSING']);
+
+// Central fetch wrapper: attaches the in-memory access token, and on a
+// retryable 401 transparently refreshes once via the cookie and retries
+// the original request before giving up and sending the admin to /login.
+async function authedFetch(path: string, init: RequestInit = {}, isRetry = false): Promise<Response> {
+  const token = getToken();
+  const headers = new Headers(init.headers);
+  if (token) headers.set('Authorization', `Bearer ${token}`);
+
+  const res = await fetch(`${BASE}${path}`, { ...init, headers, credentials: 'include' });
+
+  if (res.status === 401) {
+    if (!isRetry && RETRYABLE_401_CODES.has((await readErrorCode(res.clone())) ?? '')) {
+      const refreshed = await refreshAccessToken();
+      if (refreshed) return authedFetch(path, init, true);
+    }
+    handleUnauthorized();
+  }
+  return res;
+}
 
 export interface LocaleText { en: string; hy: string; }
 export interface LocaleStringList { en: string[]; hy: string[]; }
@@ -46,14 +134,10 @@ export interface ApiVideo {
   updatedAt: string;
 }
 
-function authHeader(token: string) {
-  return { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
-}
-
-async function req<T>(method: string, path: string, token: string, body?: object): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
+async function req<T>(method: string, path: string, body?: object): Promise<T> {
+  const res = await authedFetch(path, {
     method,
-    headers: authHeader(token),
+    headers: { 'Content-Type': 'application/json' },
     body: body ? JSON.stringify(body) : undefined,
   });
   if (!res.ok) {
@@ -66,51 +150,53 @@ async function req<T>(method: string, path: string, token: string, body?: object
   return JSON.parse(text) as T;
 }
 
-// Public — no token
-export async function login(email: string, password: string) {
+// Public — no token, but credentials:'include' so the Set-Cookie refresh
+// token from a successful login is stored.
+export async function login(email: string, password: string): Promise<AuthPayload> {
   const res = await fetch('/api/admin/auth/login', {
     method: 'POST',
+    credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   });
   if (!res.ok) throw new Error('Invalid email or password');
-  return res.json() as Promise<{ access_token: string; user: { id: number; email: string; role: string } }>;
+  return res.json() as Promise<AuthPayload>;
 }
 
-export const changePassword = (token: string, currentPassword: string, newPassword: string) =>
-  req<void>('PATCH', '/auth/change-password', token, { currentPassword, newPassword });
+export const changePassword = (currentPassword: string, newPassword: string) =>
+  req<void>('PATCH', '/auth/change-password', { currentPassword, newPassword });
 
 // Events
-export const getEvents = (token: string, params = '') =>
-  req<{ items: ApiEvent[]; count: number }>('GET', `/events${params ? '?' + params : ''}`, token);
+export const getEvents = (params = '') =>
+  req<{ items: ApiEvent[]; count: number }>('GET', `/events${params ? '?' + params : ''}`);
 
-export const getEvent = (token: string, id: number) =>
-  req<ApiEvent>('GET', `/events/${id}`, token);
+export const getEvent = (id: number) =>
+  req<ApiEvent>('GET', `/events/${id}`);
 
-export const createEvent = (token: string, dto: object) =>
-  req<ApiEvent>('POST', '/events', token, dto);
+export const createEvent = (dto: object) =>
+  req<ApiEvent>('POST', '/events', dto);
 
-export const updateEvent = (token: string, id: number, dto: object) =>
-  req<ApiEvent>('PUT', `/events/${id}`, token, dto);
+export const updateEvent = (id: number, dto: object) =>
+  req<ApiEvent>('PUT', `/events/${id}`, dto);
 
-export const deleteEvent = (token: string, id: number) =>
-  req<void>('DELETE', `/events/${id}`, token);
+export const deleteEvent = (id: number) =>
+  req<void>('DELETE', `/events/${id}`);
 
 // Videos
-export const getVideos = (token: string) =>
-  req<{ items: ApiVideo[]; count: number }>('GET', '/videos', token);
+export const getVideos = () =>
+  req<{ items: ApiVideo[]; count: number }>('GET', '/videos');
 
-export const getVideo = (token: string, id: number) =>
-  req<ApiVideo>('GET', `/videos/${id}`, token);
+export const getVideo = (id: number) =>
+  req<ApiVideo>('GET', `/videos/${id}`);
 
-export const createVideo = (token: string, dto: object) =>
-  req<ApiVideo>('POST', '/videos', token, dto);
+export const createVideo = (dto: object) =>
+  req<ApiVideo>('POST', '/videos', dto);
 
-export const updateVideo = (token: string, id: number, dto: object) =>
-  req<ApiVideo>('PUT', `/videos/${id}`, token, dto);
+export const updateVideo = (id: number, dto: object) =>
+  req<ApiVideo>('PUT', `/videos/${id}`, dto);
 
-export const deleteVideo = (token: string, id: number) =>
-  req<void>('DELETE', `/videos/${id}`, token);
+export const deleteVideo = (id: number) =>
+  req<void>('DELETE', `/videos/${id}`);
 
 // Messages
 export interface ContactMessage {
@@ -123,42 +209,30 @@ export interface ContactMessage {
   createdAt: string;
 }
 
-export const getMessages = (token: string, source?: string) =>
-  req<ContactMessage[]>('GET', `/contacts${source ? `?source=${source}` : ''}`, token);
+export const getMessages = (source?: string) =>
+  req<ContactMessage[]>('GET', `/contacts${source ? `?source=${source}` : ''}`);
 
 // Upload
-export async function uploadImage(token: string, file: File): Promise<string> {
+export async function uploadImage(file: File): Promise<string> {
   const fd = new FormData();
   fd.append('file', file);
-  const res = await fetch(`${BASE}/upload/image`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}` },
-    body: fd,
-  });
+  const res = await authedFetch('/upload/image', { method: 'POST', body: fd });
   if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
   return (await res.json()).url as string;
 }
 
-export async function uploadImages(token: string, files: File[]): Promise<string[]> {
+export async function uploadImages(files: File[]): Promise<string[]> {
   const fd = new FormData();
   files.forEach((f) => fd.append('files', f));
-  const res = await fetch(`${BASE}/upload/images`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}` },
-    body: fd,
-  });
+  const res = await authedFetch('/upload/images', { method: 'POST', body: fd });
   if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
   return (await res.json()).urls as string[];
 }
 
-export async function uploadVideo(token: string, file: File): Promise<string> {
+export async function uploadVideo(file: File): Promise<string> {
   const fd = new FormData();
   fd.append('file', file);
-  const res = await fetch(`${BASE}/upload/video`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}` },
-    body: fd,
-  });
+  const res = await authedFetch('/upload/video', { method: 'POST', body: fd });
   if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
   return (await res.json()).url as string;
 }
@@ -202,17 +276,17 @@ export interface PaginatedOrders {
   offset: number;
 }
 
-export const getOrders = (token: string, query = "") =>
-  req<PaginatedOrders>("GET", `/orders${query ? `?${query}` : ""}`, token);
+export const getOrders = (query = "") =>
+  req<PaginatedOrders>("GET", `/orders${query ? `?${query}` : ""}`);
 
-export const getOrder = (token: string, id: number) =>
-  req<ApiOrder>("GET", `/orders/${id}`, token);
+export const getOrder = (id: number) =>
+  req<ApiOrder>("GET", `/orders/${id}`);
 
-export const refundOrder = (token: string, id: number) =>
-  req<ApiOrder>("POST", `/orders/${id}/refund`, token);
+export const refundOrder = (id: number) =>
+  req<ApiOrder>("POST", `/orders/${id}/refund`);
 
-export const reverseOrder = (token: string, id: number) =>
-  req<ApiOrder>("POST", `/orders/${id}/reverse`, token);
+export const reverseOrder = (id: number) =>
+  req<ApiOrder>("POST", `/orders/${id}/reverse`);
 
 // Maps ISO 4217 numeric currency codes (as stored by the payment gateway) to
 // their human-readable alphabetic code. Mirrors the backend's mapping.
@@ -225,10 +299,8 @@ export const currencyLabel = (code: string) => CURRENCY_LABELS[code] ?? code;
 export const ordersCsvUrl = (query = "") =>
   `${BASE}/orders/export${query ? `?${query}` : ""}`;
 
-export async function exportOrders(token: string, query = ""): Promise<Blob> {
-  const res = await fetch(ordersCsvUrl(query), {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+export async function exportOrders(query = ""): Promise<Blob> {
+  const res = await authedFetch(`/orders/export${query ? `?${query}` : ""}`, {});
   if (!res.ok) throw new Error(`Export failed: ${res.status}`);
   return res.blob();
 }

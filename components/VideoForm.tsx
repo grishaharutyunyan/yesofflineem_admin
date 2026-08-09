@@ -3,7 +3,6 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import LocaleField from "./LocaleField";
 import { uploadVideo } from "@/lib/api";
-import { getToken } from "@/lib/auth";
 import type { ApiVideo } from "@/lib/api";
 
 export type VideoFormState = {
@@ -99,7 +98,7 @@ export default function VideoForm({ initial, onSubmit }: Props) {
     setUploading(true);
     setErr("");
     try {
-      const url = await uploadVideo(getToken()!, file);
+      const url = await uploadVideo(file);
       setForm((p) => ({ ...p, url }));
     } catch (ex: any) {
       setErr(ex.message);

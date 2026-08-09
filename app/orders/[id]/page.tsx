@@ -4,7 +4,6 @@ import Link from "next/link";
 import AuthGuard from "@/components/AuthGuard";
 import Nav from "@/components/Nav";
 import { getOrder, refundOrder, reverseOrder, currencyLabel, type ApiOrder } from "@/lib/api";
-import { getToken } from "@/lib/auth";
 
 const STATUS_COLOR: Record<string, { bg: string; text: string }> = {
   paid:     { bg: "var(--success-bg)", text: "var(--success)" },
@@ -24,7 +23,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
   async function load() {
     try {
-      setOrder(await getOrder(getToken()!, orderId));
+      setOrder(await getOrder(orderId));
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to load order");
     }
@@ -38,8 +37,8 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     setError(null);
     try {
       const updated = action === "refund"
-        ? await refundOrder(getToken()!, orderId)
-        : await reverseOrder(getToken()!, orderId);
+        ? await refundOrder(orderId)
+        : await reverseOrder(orderId);
       setOrder(updated);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : `${action} failed`);
