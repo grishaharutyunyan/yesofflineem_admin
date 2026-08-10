@@ -9,7 +9,7 @@ import ImageUpload from "./ImageUpload";
 import GalleryUpload from "./GalleryUpload";
 import ScheduleBuilder from "./ScheduleBuilder";
 import IncludesEditor, { type IncludeItem } from "./IncludesEditor";
-import HostEditor from "./HostEditor";
+import HostsEditor from "./HostsEditor";
 import MapPicker from "./MapPicker";
 import type { ApiEvent, EventCoordinates, EventHost, ScheduleItem } from "@/lib/api";
 
@@ -59,7 +59,7 @@ export type EventFormState = {
   longDescription_en: string; longDescription_hy: string;
   includes: IncludeItem[];
   schedule: ScheduleItem[];
-  host: EventHost;
+  hosts: EventHost[];
   coordinates: EventCoordinates;
   maxCapacity: string; bookedCount: string; price: string;
   cardImageUrl: string; galleryUrls: string[];
@@ -92,7 +92,7 @@ export function eventToForm(ev: ApiEvent): EventFormState {
         label: { en: s.label?.en ?? "", hy: s.label?.hy ?? "" },
         sub: { en: s.sub?.en ?? "", hy: s.sub?.hy ?? "" },
       })),
-    host: ev.host,
+    hosts: ev.hosts ?? [],
     coordinates: ev.coordinates,
     maxCapacity: String(ev.maxCapacity),
     bookedCount: String(ev.bookedCount),
@@ -120,7 +120,7 @@ export function emptyForm(): EventFormState {
     longDescription_en: "", longDescription_hy: "",
     includes: [],
     schedule: [],
-    host: { name: { en: "", hy: "" }, role: { en: "", hy: "" }, imageUrl: null },
+    hosts: [],
     coordinates: { lat: 40.1872, lng: 44.5152, address: { en: "", hy: "" } },
     maxCapacity: "10", bookedCount: "0", price: "0",
     cardImageUrl: "", galleryUrls: [],
@@ -149,7 +149,7 @@ export function formToDto(f: EventFormState) {
       hy: f.includes.map((i) => i.hy).filter(Boolean),
     },
     schedule: f.schedule.filter((s) => s.time || s.label.en || s.label.hy),
-    host: f.host,
+    hosts: f.hosts,
     coordinates: f.coordinates,
     maxCapacity: Number(f.maxCapacity),
     bookedCount: Number(f.bookedCount),
@@ -462,11 +462,11 @@ export default function EventForm({ initial, onSubmit }: Props) {
           />
         </SectionCard>
 
-        {/* 06 Host */}
-        <SectionCard number="06" title="Host">
-          <HostEditor
-            value={form.host}
-            onChange={(v) => setForm((p) => ({ ...p, host: v }))}
+        {/* 06 Hosts */}
+        <SectionCard number="06" title="Hosts">
+          <HostsEditor
+            value={form.hosts}
+            onChange={(v) => setForm((p) => ({ ...p, hosts: v }))}
           />
         </SectionCard>
 

@@ -34,7 +34,7 @@ export const DETAIL_LABELS: Record<Lang, {
   back: string; dateTime: string; location: string; groupSize: string; guests: string;
   availability: string; free: string; priceNote: string; reserve: string; soldOut: string;
   about: string; included: string; schedule: string; mapTitle: string; openMaps: string;
-  priceUnit: string; viewReserve: string; yourHost: string;
+  priceUnit: string; viewReserve: string; yourHost: string; yourHosts: string;
   spotsLeft: (n: number) => string;
 }> = {
   en: {
@@ -44,6 +44,7 @@ export const DETAIL_LABELS: Record<Lang, {
     schedule: "Schedule", mapTitle: "Map —", openMaps: "Open in Maps ↗",
     priceUnit: "AMD / person", viewReserve: "view and reserve",
     yourHost: "Initiator",
+    yourHosts: "Initiators",
     spotsLeft: (n) => `Only ${n} spots remaining`,
   },
   hy: {
@@ -53,6 +54,7 @@ export const DETAIL_LABELS: Record<Lang, {
     included: "Ինչ է ներառված", schedule: "Ժամանակացույց", mapTitle: "Քարտեզ —", openMaps: "Բացել Maps-ում ↗",
     priceUnit: "ՀՀ դրամ / անձ", viewReserve: "Դիտել և ամրագրել",
     yourHost: "Նախաձեռնության հեղինակ",
+    yourHosts: "Նախաձեռնության հեղինակներ",
     spotsLeft: (n) => `${n} տեղ է մնացել`,
   },
 };

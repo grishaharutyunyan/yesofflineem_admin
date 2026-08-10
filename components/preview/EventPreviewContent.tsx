@@ -176,18 +176,20 @@ export default function EventPreviewContent({ view, lang }: { view: EventView; l
             </div>
 
             <div>
-              {view.host && (
+              {view.hosts.length > 0 && (
                 <>
                   <h2 style={{ fontFamily: "var(--font-cormorant)", fontSize: "1.85rem", fontWeight: 500, color: "#0a0a0a", marginBottom: "1.2rem", letterSpacing: "-0.01em" }}>
-                    {t.yourHost}
+                    {view.hosts.length >= 2 ? t.yourHosts : t.yourHost}
                   </h2>
-                  <div style={{ display: "flex", alignItems: "center", gap: "1rem", background: "#fff", border: "1px solid #e8e8e8", padding: "1.4rem" }}>
-                    <div style={{ width: 56, height: 56, borderRadius: "50%", flexShrink: 0, background: view.hostImageUrl ? `url(${view.hostImageUrl}) center/cover` : "#d4d4d4" }} />
-                    <div>
-                      <div style={{ fontFamily: "var(--font-sans)", fontSize: "0.96rem", fontWeight: 600, color: "#0a0a0a" }}>{view.host}</div>
-                      <div style={{ fontFamily: "var(--font-sans)", fontSize: "0.8rem", color: "#888888", marginTop: "0.2rem" }}>{view.hostRole}</div>
+                  {view.hosts.map((host, i) => (
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: "1rem", background: "#fff", border: "1px solid #e8e8e8", padding: "1.4rem", marginTop: i > 0 ? "0.7rem" : 0 }}>
+                      <div style={{ width: 56, height: 56, borderRadius: "50%", flexShrink: 0, background: host.imageUrl ? `url(${host.imageUrl}) center/cover` : "#d4d4d4" }} />
+                      <div>
+                        <div style={{ fontFamily: "var(--font-sans)", fontSize: "0.96rem", fontWeight: 600, color: "#0a0a0a" }}>{host.name}</div>
+                        <div style={{ fontFamily: "var(--font-sans)", fontSize: "0.8rem", color: "#888888", marginTop: "0.2rem" }}>{host.role}</div>
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </>
               )}
 

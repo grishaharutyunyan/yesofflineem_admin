@@ -108,7 +108,7 @@ export interface ApiEvent {
   longDescription: LocaleText;
   includes: LocaleStringList;
   schedule: ScheduleItem[];
-  host: EventHost;
+  hosts: EventHost[];
   coordinates: EventCoordinates;
   maxCapacity: number;
   bookedCount: number;

@@ -74,9 +74,7 @@ export interface EventView {
   longDesc: string;
   includes: string[];
   schedule: { time: string; label: string; sub: string }[];
-  host: string;
-  hostRole: string;
-  hostImageUrl: string | null;
+  hosts: { name: string; role: string; imageUrl: string | null }[];
   mapAddress: string;
   mapQuery: string;
   lat: number;
@@ -114,9 +112,11 @@ export function toEventView(ev: ApiEvent, lang: Lang): EventView {
     longDesc: pickLocaleText(ev.longDescription, lang),
     includes: pickLocaleList(ev.includes, lang),
     schedule: pickScheduleForLang(ev.schedule, lang),
-    host: pickLocaleText(ev.host?.name, lang),
-    hostRole: pickLocaleText(ev.host?.role, lang),
-    hostImageUrl: ev.host?.imageUrl ?? null,
+    hosts: (ev.hosts ?? []).map((h) => ({
+      name: pickLocaleText(h?.name, lang),
+      role: pickLocaleText(h?.role, lang),
+      imageUrl: h?.imageUrl ?? null,
+    })),
     mapAddress: address,
     mapQuery: address,
     lat: ev.coordinates?.lat ?? 0,
