@@ -112,7 +112,7 @@ export function toEventView(ev: ApiEvent, lang: Lang): EventView {
     longDesc: pickLocaleText(ev.longDescription, lang),
     includes: pickLocaleList(ev.includes, lang),
     schedule: pickScheduleForLang(ev.schedule, lang),
-    hosts: (ev.hosts ?? []).map((h) => ({
+    hosts: (Array.isArray(ev.hosts) ? ev.hosts : ev.hosts ? [ev.hosts] : []).map((h) => ({
       name: pickLocaleText(h?.name, lang),
       role: pickLocaleText(h?.role, lang),
       imageUrl: h?.imageUrl ?? null,
