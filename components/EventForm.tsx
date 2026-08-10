@@ -92,7 +92,11 @@ export function eventToForm(ev: ApiEvent): EventFormState {
         label: { en: s.label?.en ?? "", hy: s.label?.hy ?? "" },
         sub: { en: s.sub?.en ?? "", hy: s.sub?.hy ?? "" },
       })),
-    hosts: Array.isArray(ev.hosts) ? ev.hosts : ev.hosts ? [ev.hosts] : [],
+    hosts: (Array.isArray(ev.hosts) ? ev.hosts : ev.hosts ? [ev.hosts] : []).map((h) => ({
+      name: { en: h?.name?.en ?? "", hy: h?.name?.hy ?? "" },
+      role: { en: h?.role?.en ?? "", hy: h?.role?.hy ?? "" },
+      imageUrl: h?.imageUrl ?? null,
+    })),
     coordinates: ev.coordinates,
     maxCapacity: String(ev.maxCapacity),
     bookedCount: String(ev.bookedCount),

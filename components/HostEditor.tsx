@@ -63,7 +63,7 @@ export default function HostEditor({ value, onChange }: Props) {
           <div>
             <label style={colLabel}>EN</label>
             <input
-              value={value.name.en}
+              value={value.name?.en ?? ""}
               onChange={(e) => setLocale("name", "en", e.target.value)}
               placeholder="Jane Doe"
               style={inp}
@@ -74,7 +74,7 @@ export default function HostEditor({ value, onChange }: Props) {
           <div>
             <label style={colLabel}>HY</label>
             <input
-              value={value.name.hy}
+              value={value.name?.hy ?? ""}
               onChange={(e) => setLocale("name", "hy", e.target.value)}
               placeholder="Ջեյն Դո"
               style={inp}
@@ -92,7 +92,7 @@ export default function HostEditor({ value, onChange }: Props) {
           <div>
             <label style={colLabel}>EN</label>
             <input
-              value={value.role.en}
+              value={value.role?.en ?? ""}
               onChange={(e) => setLocale("role", "en", e.target.value)}
               placeholder="Yoga & Wellness Facilitator"
               style={inp}
@@ -103,7 +103,7 @@ export default function HostEditor({ value, onChange }: Props) {
           <div>
             <label style={colLabel}>HY</label>
             <input
-              value={value.role.hy}
+              value={value.role?.hy ?? ""}
               onChange={(e) => setLocale("role", "hy", e.target.value)}
               placeholder="Յոգայի ֆասիլիտատոր"
               style={inp}
