@@ -57,16 +57,16 @@ export default function EventCardPreview({ view, lang }: { view: EventView; lang
           </div>
 
           <div style={{ padding: "2rem 2.5rem", borderTop: "1px solid rgba(0,0,0,0.06)", display: "flex", flexDirection: "column", gap: "1.4rem" }}>
-            <div>
-              <div style={{ fontFamily: "var(--font-cormorant)", fontSize: "2.6rem", fontWeight: 400, color: "#0a0a0a" }}>
-                {view.price === 0 ? t.free : view.priceStr}
-              </div>
-              {view.price > 0 && (
+            {view.price > 0 && (
+              <div>
+                <div style={{ fontFamily: "var(--font-cormorant)", fontSize: "2.6rem", fontWeight: 400, color: "#0a0a0a" }}>
+                  {view.priceStr}
+                </div>
                 <small style={{ fontFamily: "var(--font-sans)", fontSize: "0.75rem", color: "#888888", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginTop: "0.2rem" }}>
                   {t.priceUnit}
                 </small>
-              )}
-            </div>
+              </div>
+            )}
             <div style={{ fontFamily: "var(--font-sans)", fontSize: "0.72rem", color: "#0a0a0a", fontWeight: 500, letterSpacing: "0.06em" }}>
               {view.spotsLeft === 0 ? t.soldOut : t.spotsLeft(view.spotsLeft)}
             </div>

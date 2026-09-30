@@ -66,18 +66,20 @@ export default function EventPreviewContent({ view, lang }: { view: EventView; l
 
             <div style={{ height: 1, background: "rgba(0,0,0,0.08)" }} />
 
-            <div>
-              <div style={{ fontFamily: "var(--font-cormorant)", fontSize: "2.5rem", fontWeight: 400, color: "#0a0a0a" }}>
-                {view.price === 0 ? t.free : `AMD ${view.priceStr}`}
-              </div>
-              {view.price > 0 && (
-                <div style={{ fontFamily: "var(--font-sans)", fontSize: "0.75rem", color: "#888888", marginTop: "0.2rem" }}>
-                  {t.priceNote}
+            {view.price > 0 && (
+              <>
+                <div>
+                  <div style={{ fontFamily: "var(--font-cormorant)", fontSize: "2.5rem", fontWeight: 400, color: "#0a0a0a" }}>
+                    {`AMD ${view.priceStr}`}
+                  </div>
+                  <div style={{ fontFamily: "var(--font-sans)", fontSize: "0.75rem", color: "#888888", marginTop: "0.2rem" }}>
+                    {t.priceNote}
+                  </div>
                 </div>
-              )}
-            </div>
 
-            <div style={{ height: 1, background: "rgba(0,0,0,0.08)" }} />
+                <div style={{ height: 1, background: "rgba(0,0,0,0.08)" }} />
+              </>
+            )}
 
             {[
               { label: t.dateTime, val: view.dateLong },

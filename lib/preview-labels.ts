@@ -32,14 +32,14 @@ export const FOOTER_LABELS: Record<Lang, {
 
 export const DETAIL_LABELS: Record<Lang, {
   back: string; dateTime: string; location: string; groupSize: string; guests: string;
-  availability: string; free: string; priceNote: string; reserve: string; soldOut: string;
+  availability: string; priceNote: string; reserve: string; soldOut: string;
   about: string; included: string; schedule: string; mapTitle: string; openMaps: string;
   priceUnit: string; viewReserve: string; yourHost: string; yourHosts: string;
   spotsLeft: (n: number) => string;
 }> = {
   en: {
     back: "Back to events", dateTime: "Date and time", location: "Location", groupSize: "Group size",
-    guests: "participants", availability: "Availability", free: "Free", priceNote: "AMD / person",
+    guests: "participants", availability: "Availability", priceNote: "AMD / person",
     reserve: "Reservation", soldOut: "Sold out", about: "About the experience", included: "What's Included",
     schedule: "Schedule", mapTitle: "Map —", openMaps: "Open in Maps ↗",
     priceUnit: "AMD / person", viewReserve: "view and reserve",
@@ -49,7 +49,7 @@ export const DETAIL_LABELS: Record<Lang, {
   },
   hy: {
     back: "Հետ դեպի հանդիպումներ", dateTime: "Ամսաթիվ և ժամ", location: "Վայր", groupSize: "Խմբի չափ",
-    guests: "հոգի", availability: "Հասանելիություն", free: "Անվճար", priceNote: "ՀՀ դրամ / անձ",
+    guests: "հոգի", availability: "Հասանելիություն", priceNote: "ՀՀ դրամ / անձ",
     reserve: "Ամրագրում", soldOut: "Ամբողջությամբ վաճառված", about: "Փորձառության մասին",
     included: "Ինչ է ներառված", schedule: "Ժամանակացույց", mapTitle: "Քարտեզ —", openMaps: "Բացել Maps-ում ↗",
     priceUnit: "ՀՀ դրամ / անձ", viewReserve: "Դիտել և ամրագրել",
