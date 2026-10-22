@@ -14,6 +14,7 @@ const STATUS_DOT: Record<string, string> = {
 export default function DashboardPage() {
   const [events, setEvents] = useState<ApiEvent[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [priceFilter, setPriceFilter] = useState<"all" | "free" | "paid">("all");
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -36,8 +37,9 @@ export default function DashboardPage() {
     const today = new Date().toISOString().slice(0, 10);
     return events
       .filter((e) => e.status !== "archived" && e.dates.start.slice(0, 10) >= today)
+      .filter((e) => priceFilter === "all" || (priceFilter === "free") === (e.price === 0))
       .sort((a, b) => a.dates.start.localeCompare(b.dates.start));
-  }, [events]);
+  }, [events, priceFilter]);
 
   // Auto-select the first upcoming event once loaded, and keep selection valid.
   useEffect(() => {
@@ -114,6 +116,22 @@ export default function DashboardPage() {
                 }}>
                   Upcoming events
                 </div>
+                <div style={{ display: "flex", gap: "0.4rem", padding: "0.6rem 1rem", borderBottom: "1px solid var(--border)" }}>
+                  {(["all", "free", "paid"] as const).map((f) => (
+                    <button
+                      key={f}
+                      onClick={() => setPriceFilter(f)}
+                      style={{
+                        padding: "0.2rem 0.7rem", borderRadius: 100, fontSize: "0.72rem", cursor: "pointer",
+                        textTransform: "capitalize", border: "1px solid var(--border)",
+                        background: priceFilter === f ? "var(--ink)" : "transparent",
+                        color: priceFilter === f ? "var(--surface)" : "var(--ink-3)",
+                      }}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
                 {upcoming.map((ev) => {
                   const pct = ev.maxCapacity > 0 ? (ev.bookedCount / ev.maxCapacity) * 100 : 0;
                   return (
@@ -128,6 +146,7 @@ export default function DashboardPage() {
                         <span>{ev.dates.start.slice(0, 10)}</span>
                         <span className="cap-track"><span className="cap-fill" style={{ width: `${Math.min(pct, 100)}%` }} /></span>
                         <span>{ev.bookedCount}/{ev.maxCapacity}</span>
+                        <span>{ev.price === 0 ? "Free" : "Paid"}</span>
                       </div>
                     </button>
                   );

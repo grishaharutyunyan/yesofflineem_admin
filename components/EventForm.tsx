@@ -476,6 +476,14 @@ export default function EventForm({ initial, onSubmit }: Props) {
 
         {/* 07 Capacity & Pricing */}
         <SectionCard number="07" title="Capacity & Pricing">
+          <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1rem", fontSize: "0.85rem", cursor: "pointer" }}>
+            <input
+              type="checkbox"
+              checked={form.price === "0"}
+              onChange={(e) => set("price", e.target.checked ? "0" : "")}
+            />
+            Free event (no bank payment step — guests just register)
+          </label>
           <div className="form-row-3">
             {(["maxCapacity", "bookedCount", "price"] as const).map((k) => (
               <div key={k} style={field}>
@@ -486,6 +494,7 @@ export default function EventForm({ initial, onSubmit }: Props) {
                   type="number" min="0"
                   value={form[k]}
                   onChange={(e) => set(k, e.target.value)}
+                  disabled={k === "price" && form.price === "0"}
                   className="form-input"
                   style={{ fontFamily: "var(--font-mono, monospace)" }}
                 />

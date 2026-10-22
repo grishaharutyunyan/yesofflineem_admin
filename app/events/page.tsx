@@ -287,7 +287,7 @@ export default function EventsPage() {
                 <table className="tbl">
                   <thead>
                     <tr>
-                      {["ID", "Title", "Status", "Date", "Capacity", ""].map((h) => (
+                      {["ID", "Title", "Status", "Type", "Date", "Capacity", ""].map((h) => (
                         <th key={h}>{h}</th>
                       ))}
                     </tr>
@@ -317,6 +317,9 @@ export default function EventsPage() {
                               <span style={{ width: 5, height: 5, borderRadius: "50%", background: sc.dot, flexShrink: 0 }} />
                               {ev.status}
                             </span>
+                          </td>
+                          <td style={{ fontSize: "0.78rem", color: "var(--ink-3)" }}>
+                            {ev.price === 0 ? "Free" : `${ev.price.toLocaleString("en-US")} AMD`}
                           </td>
                           <td>
                             <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: "0.78rem", color: "var(--ink-3)", whiteSpace: "nowrap" }}>
