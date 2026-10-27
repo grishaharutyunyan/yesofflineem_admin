@@ -38,7 +38,7 @@ export default function LocaleField({ label, enValue, hyValue, onChange, multili
         )}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.65rem" }}>
+      <div className="lang-pair" style={{ gap: "0.65rem" }}>
         {(["en", "hy"] as const).map((lang) => (
           <div key={lang}>
             <div style={{ display: "flex", alignItems: "center", marginBottom: "0.28rem" }}>

@@ -214,7 +214,7 @@ export default function ScheduleBuilder({ value, onChange }: Props) {
                 />
               ) : (
                 <>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem", alignItems: "flex-start" }}>
+                  <div className="grid-3" style={{ gap: "0.5rem", alignItems: "flex-start" }}>
                     {/* Date */}
                     <DatePickerInput
                       label="Date"
@@ -245,7 +245,7 @@ export default function ScheduleBuilder({ value, onChange }: Props) {
             </div>
 
             {/* Label row */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", marginBottom: "0.5rem" }}>
+            <div className="lang-pair" style={{ gap: "0.5rem", marginBottom: "0.5rem" }}>
               <div>
                 <label style={labelSt}>Label — EN</label>
                 <input value={item.label.en}
@@ -265,7 +265,7 @@ export default function ScheduleBuilder({ value, onChange }: Props) {
             </div>
 
             {/* Sub row */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+            <div className="lang-pair" style={{ gap: "0.5rem" }}>
               <div>
                 <label style={labelSt}>Details — EN</label>
                 <input value={item.sub.en}

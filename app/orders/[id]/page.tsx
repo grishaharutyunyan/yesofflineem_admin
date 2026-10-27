@@ -87,8 +87,8 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
           <div style={{ marginBottom: "1.75rem" }}>
             <h1 style={{
-              fontFamily: "var(--font-cormorant, serif)",
-              fontSize: "1.85rem", fontWeight: 600,
+              fontFamily: "var(--font-heading)",
+              fontSize: "1.5rem", fontWeight: 650,
               lineHeight: 1, letterSpacing: "-0.01em",
               color: "var(--ink)",
             }}>

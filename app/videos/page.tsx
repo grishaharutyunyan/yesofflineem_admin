@@ -3,28 +3,44 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import AuthGuard from "@/components/AuthGuard";
 import Nav from "@/components/Nav";
+import Pagination from "@/components/Pagination";
+import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
 import { getVideos, deleteVideo, type ApiVideo } from "@/lib/api";
+
+const PAGE_SIZE = 20;
 
 export default function VideosPage() {
   const [videos, setVideos] = useState<ApiVideo[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<number | null>(null);
+  const [confirmTarget, setConfirmTarget] = useState<{ id: number; title: string } | null>(null);
 
   async function load() {
     setLoading(true);
-    const data = await getVideos();
-    setVideos(data.items);
-    setLoading(false);
+    try {
+      // Backend range is [page, limit].
+      const data = await getVideos(`range=${encodeURIComponent(JSON.stringify([page, PAGE_SIZE]))}`);
+      setVideos(data.items);
+      setTotal(data.count);
+    } finally {
+      setLoading(false);
+    }
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [page]);
 
-  async function handleDelete(id: number, title: string) {
-    if (!confirm(`Delete "${title}"?`)) return;
+  async function confirmDelete() {
+    if (!confirmTarget) return;
+    const { id } = confirmTarget;
+    setConfirmTarget(null);
     setDeleting(id);
     try {
       await deleteVideo(id);
-      setVideos((prev) => prev.filter((v) => v.id !== id));
+      // Refetch so the next video moves up into this page; step back if the page emptied.
+      if (videos.length === 1 && page > 1) setPage(page - 1);
+      else load();
     } finally {
       setDeleting(null);
     }
@@ -33,78 +49,23 @@ export default function VideosPage() {
   return (
     <>
       <style>{`
-        .tbl { width: 100%; border-collapse: collapse; }
-        .tbl th {
-          padding: 0.6rem 1rem;
-          text-align: left;
-          font-size: 0.68rem; font-weight: 600;
-          color: var(--ink-4);
-          letter-spacing: 0.08em; text-transform: uppercase;
-          border-bottom: 1px solid var(--border);
-          white-space: nowrap;
-          background: var(--surface-2);
-        }
-        .tbl td {
-          padding: 0.78rem 1rem;
-          border-bottom: 1px solid var(--border);
-          font-size: 0.855rem; color: var(--ink);
-          vertical-align: middle;
-        }
-        .tbl tbody tr:last-child td { border-bottom: none; }
-        .tbl tbody tr { transition: background var(--transition); }
-        .tbl tbody tr:hover td { background: #faf8f4; }
-        .btn-edit {
-          display: inline-block;
-          padding: 0.28rem 0.65rem;
-          border: 1px solid var(--border);
-          border-radius: var(--radius-sm);
-          font-size: 0.765rem; font-weight: 500;
-          color: var(--ink-2); background: var(--surface);
-          cursor: pointer; transition: all var(--transition);
-          text-decoration: none;
-        }
-        .btn-edit:hover { border-color: var(--ink-2); color: var(--ink); }
-        .btn-del {
-          padding: 0.28rem 0.65rem;
-          border: 1px solid var(--danger-border);
-          border-radius: var(--radius-sm);
-          font-size: 0.765rem; font-weight: 500;
-          color: var(--danger); background: var(--surface);
-          cursor: pointer; transition: all var(--transition);
-        }
-        .btn-del:hover:not(:disabled) { background: var(--danger-bg); }
-        .btn-del:disabled { opacity: 0.45; cursor: default; }
-        .primary-btn {
-          display: inline-flex; align-items: center; gap: 0.3rem;
-          padding: 0.52rem 1.1rem;
-          background: var(--ink); color: #fff;
-          border-radius: var(--radius-sm);
-          font-size: 0.845rem; font-weight: 600;
-          letter-spacing: 0.01em;
-          transition: opacity var(--transition);
-          text-decoration: none;
-        }
-        .primary-btn:hover { opacity: 0.82; }
-        @media (max-width: 768px) {
-          .page-header { flex-direction: column; gap: 0.75rem; align-items: flex-start !important; }
-        }
       `}</style>
       <AuthGuard>
         <Nav />
         <main className="page-wrap">
 
           {/* Header */}
-          <div className="page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.75rem" }}>
+          <div className="page-header" style={{ marginBottom: "1.75rem" }}>
             <div>
               <h1 style={{
-                fontFamily: "var(--font-cormorant, serif)",
-                fontSize: "1.85rem", fontWeight: 600,
+                fontFamily: "var(--font-heading)",
+                fontSize: "1.5rem", fontWeight: 650,
                 lineHeight: 1, letterSpacing: "-0.01em",
               }}>
                 Videos
               </h1>
-              <p style={{ color: "var(--ink-4)", fontSize: "0.82rem", marginTop: "0.3rem" }}>
-                {videos.length} {videos.length === 1 ? "video" : "videos"}
+              <p style={{ color: "var(--ink-3)", fontSize: "0.85rem", marginTop: "0.35rem" }}>
+                {total} {total === 1 ? "video" : "videos"}
               </p>
             </div>
             <Link href="/videos/new" className="primary-btn">
@@ -137,32 +98,40 @@ export default function VideosPage() {
                 <table className="tbl">
                   <thead>
                     <tr>
-                      {["ID", "Title", "Priority", ""].map((h) => (
+                      {["#", "Title", "Subtitle", "Priority", "Added", "Actions"].map((h) => (
                         <th key={h}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {videos.map((v) => (
+                    {videos.map((v, i) => (
                       <tr key={v.id}>
-                        <td>
+                        <td className="cell-idx">
                           <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: "0.75rem", color: "var(--ink-4)" }}>
-                            {v.id}
+                            {(page - 1) * PAGE_SIZE + i + 1}
                           </span>
                         </td>
-                        <td style={{ fontWeight: 500, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {v.title.en}
+                        <td className="cell-main" style={{ fontWeight: 500, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          <Link href={`/videos/${v.id}`} style={{ color: "var(--ink)" }}>{v.title.en}</Link>
                         </td>
-                        <td>
+                        <td data-label="Subtitle" style={{ color: "var(--ink-3)", maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {v.subtitle?.en || "—"}
+                        </td>
+                        <td data-label="Priority">
                           <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: "0.82rem", color: "var(--ink-2)" }}>
                             {v.priority}
                           </span>
                         </td>
-                        <td>
+                        <td data-label="Added">
+                          <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: "0.78rem", color: "var(--ink-3)", whiteSpace: "nowrap" }}>
+                            {v.createdAt.slice(0, 10)}
+                          </span>
+                        </td>
+                        <td data-label="" className="cell-actions">
                           <div style={{ display: "flex", gap: "0.4rem" }}>
                             <Link href={`/videos/${v.id}`} className="btn-edit">Edit</Link>
                             <button
-                              onClick={() => handleDelete(v.id, v.title.en)}
+                              onClick={() => setConfirmTarget({ id: v.id, title: v.title.en })}
                               disabled={deleting === v.id}
                               className="btn-del"
                             >
@@ -174,10 +143,20 @@ export default function VideosPage() {
                     ))}
                   </tbody>
                 </table>
+                <Pagination page={page} pageSize={PAGE_SIZE} total={total} onChange={setPage} />
               </div>
             )}
           </div>
         </main>
+
+        {confirmTarget && (
+          <ConfirmDeleteModal
+            kind="video"
+            name={confirmTarget.title}
+            onCancel={() => setConfirmTarget(null)}
+            onConfirm={confirmDelete}
+          />
+        )}
       </AuthGuard>
     </>
   );
