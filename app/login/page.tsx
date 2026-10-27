@@ -55,13 +55,13 @@ export default function LoginPage() {
         }
         .login-field::placeholder { color: var(--ink-4); }
         .login-field:focus {
-          border-color: var(--ink);
-          box-shadow: 0 0 0 3px rgba(10,10,10,0.07);
+          border-color: var(--accent);
+          box-shadow: 0 0 0 3px rgba(79,70,229,0.15);
         }
         .login-submit {
           width: 100%;
           padding: 0.7rem;
-          background: var(--ink);
+          background: var(--accent);
           color: #fff;
           border: none;
           border-radius: var(--radius-sm);
@@ -82,7 +82,7 @@ export default function LoginPage() {
           <div style={{ textAlign: "center", marginBottom: "2.4rem" }}>
             <div style={{
               display: "inline-flex", alignItems: "center", justifyContent: "center",
-              width: 46, height: 46, background: "var(--ink)",
+              width: 46, height: 46, background: "var(--accent)",
               borderRadius: 11, marginBottom: "1.1rem",
             }}>
               <svg width="21" height="21" viewBox="0 0 21 21" fill="none">

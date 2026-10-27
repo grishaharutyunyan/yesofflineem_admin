@@ -3,6 +3,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import AuthGuard from "@/components/AuthGuard";
 import Nav from "@/components/Nav";
+import Pagination from "@/components/Pagination";
+import EventParticipants from "@/components/EventParticipants";
+import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
+import FilterSelect, { type FilterOption } from "@/components/FilterSelect";
 import { getEvents, deleteEvent, type ApiEvent } from "@/lib/api";
 
 const STATUS_CONFIG: Record<string, { bg: string; text: string; dot: string }> = {
@@ -11,23 +15,51 @@ const STATUS_CONFIG: Record<string, { bg: string; text: string; dot: string }> =
   archived: { bg: "var(--surface-2)",   text: "var(--ink-3)",    dot: "var(--ink-4)"   },
 };
 
-const FILTERS = ["all", "active", "draft", "archived"];
+const DATE_OPTIONS: FilterOption[] = [
+  { value: "", label: "Any date" },
+  { value: "upcoming", label: "Upcoming" },
+  { value: "past", label: "Past" },
+];
+const STATUS_OPTIONS: FilterOption[] = [
+  { value: "", label: "Any status" },
+  { value: "active", label: "Active", dot: "var(--success)" },
+  { value: "draft", label: "Draft", dot: "var(--warning)" },
+  { value: "archived", label: "Archived", dot: "var(--ink-4)" },
+];
+
+const PAGE_SIZE = 20;
 
 export default function EventsPage() {
   const [events, setEvents] = useState<ApiEvent[]>([]);
   const [total, setTotal] = useState(0);
-  const [filter, setFilter] = useState("all");
+  const [when, setWhen] = useState("");
+  const [status, setStatus] = useState("");
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<number | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [confirmTarget, setConfirmTarget] = useState<{ id: number; slug: string; title: string } | null>(null);
+  const [participantsOf, setParticipantsOf] = useState<ApiEvent | null>(null);
+
+  // Close the participants drawer with Escape.
+  useEffect(() => {
+    if (!participantsOf) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setParticipantsOf(null); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [participantsOf]);
 
   async function load() {
     setLoading(true);
     setLoadError(null);
     try {
-      const params = filter !== "all" ? `status=${filter}` : "";
+      // Backend range is [page, limit].
+      const params = [
+        `range=${encodeURIComponent(JSON.stringify([page, PAGE_SIZE]))}`,
+        when ? `when=${when}` : "",
+        status ? `status=${status}` : "",
+      ].filter(Boolean).join("&");
       const data = await getEvents(params);
       setEvents(data.items);
       setTotal(data.count);
@@ -38,10 +70,16 @@ export default function EventsPage() {
     }
   }
 
-  useEffect(() => { load(); }, [filter]);
+  useEffect(() => { load(); }, [when, status, page]);
 
   function handleDelete(id: number, slug: string, title: string) {
     setConfirmTarget({ id, slug, title });
+  }
+
+  // Refetch so the next event moves up into this page; step back if the page emptied.
+  function afterDelete() {
+    if (events.length === 1 && page > 1) setPage(page - 1);
+    else load();
   }
 
   async function confirmDelete() {
@@ -52,13 +90,11 @@ export default function EventsPage() {
     setDeleteError(null);
     try {
       await deleteEvent(id);
-      setEvents((prev) => prev.filter((e) => e.id !== id));
-      setTotal((t) => t - 1);
+      afterDelete();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       if (msg.includes('404')) {
-        setEvents((prev) => prev.filter((e) => e.id !== id));
-        setTotal((t) => t - 1);
+        afterDelete();
       } else {
         setDeleteError(`Failed to delete "${slug}": ${msg}`);
       }
@@ -73,146 +109,59 @@ export default function EventsPage() {
   return (
     <>
       <style>{`
-        .filter-pill {
-          padding: 0.28rem 0.85rem;
-          border: 1px solid var(--border);
-          border-radius: 100px;
-          background: var(--surface);
-          color: var(--ink-3);
-          font-size: 0.775rem;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all var(--transition);
-          text-transform: capitalize;
-          letter-spacing: 0.02em;
+        .cap-bar {
+          display: flex; align-items: center; gap: 0.45rem;
+          border: none; background: none; padding: 0.2rem 0.3rem; margin: -0.2rem -0.3rem;
+          border-radius: var(--radius-sm); cursor: pointer;
         }
-        .filter-pill:hover { border-color: var(--ink); color: var(--ink); }
-        .filter-pill.on { background: var(--ink); color: #fff; border-color: var(--ink); }
-        .tbl { width: 100%; border-collapse: collapse; }
-        .tbl th {
-          padding: 0.6rem 1rem;
-          text-align: left;
-          font-size: 0.68rem;
-          font-weight: 600;
-          color: var(--ink-4);
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          border-bottom: 1px solid var(--border);
-          white-space: nowrap;
-          background: var(--surface-2);
+        .cap-bar:hover { background: var(--accent-bg); }
+        .cap-bar:hover span { color: var(--accent-ink) !important; }
+        .btn-people {
+          display: inline-flex; align-items: center; gap: 0.35rem;
+          padding: 0.3rem 0.7rem; border-radius: var(--radius-sm);
+          border: 1px solid #c7d2fe; background: var(--accent-bg); color: var(--accent-ink);
+          font-size: 0.78rem; font-weight: 600; cursor: pointer; white-space: nowrap;
+          transition: background var(--transition);
         }
-        .tbl td {
-          padding: 0.78rem 1rem;
-          border-bottom: 1px solid var(--border);
-          font-size: 0.855rem;
-          color: var(--ink);
-          vertical-align: middle;
+        .btn-people:hover { background: #e0e7ff; }
+        .drawer-backdrop { position: fixed; inset: 0; background: rgba(15,23,42,0.4); z-index: 900; animation: fadeIn 0.15s ease; }
+        .drawer {
+          position: fixed; top: 0; right: 0; bottom: 0; z-index: 901;
+          width: min(960px, 100%); background: var(--bg); box-shadow: -8px 0 32px rgba(15,23,42,0.18);
+          display: flex; flex-direction: column; animation: drawerIn 0.2s ease;
         }
-        .tbl tbody tr:last-child td { border-bottom: none; }
-        .tbl tbody tr { transition: background var(--transition); }
-        .tbl tbody tr:hover td { background: #faf8f4; }
-        .btn-edit {
-          display: inline-block;
-          padding: 0.28rem 0.65rem;
-          border: 1px solid var(--border);
-          border-radius: var(--radius-sm);
-          font-size: 0.765rem; font-weight: 500;
-          color: var(--ink-2); background: var(--surface);
-          cursor: pointer; transition: all var(--transition);
-          text-decoration: none;
+        .drawer-head {
+          display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+          padding: 1rem 1.5rem; background: var(--surface); border-bottom: 1px solid var(--border);
         }
-        .btn-edit:hover { border-color: var(--ink-2); color: var(--ink); }
-        .btn-del {
-          padding: 0.28rem 0.65rem;
-          border: 1px solid var(--danger-border);
-          border-radius: var(--radius-sm);
-          font-size: 0.765rem; font-weight: 500;
-          color: var(--danger); background: var(--surface);
-          cursor: pointer; transition: all var(--transition);
+        .drawer-body { flex: 1; overflow-y: auto; padding: 0 1.5rem 2rem; }
+        .drawer-close {
+          width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center;
+          border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface);
+          color: var(--ink-3); cursor: pointer; font-size: 1.1rem;
         }
-        .btn-del:hover:not(:disabled) { background: var(--danger-bg); }
-        .btn-del:disabled { opacity: 0.45; cursor: default; }
-        .cap-bar { display: flex; align-items: center; gap: 0.45rem; }
-        .cap-track { width: 42px; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; flex-shrink: 0; }
-        .cap-fill { height: 100%; border-radius: 2px; background: var(--ink); transition: width 0.3s; }
-        .primary-btn {
-          display: inline-flex; align-items: center; gap: 0.3rem;
-          padding: 0.52rem 1.1rem;
-          background: var(--ink); color: #fff;
-          border-radius: var(--radius-sm);
-          font-size: 0.845rem; font-weight: 600;
-          letter-spacing: 0.01em;
-          transition: opacity var(--transition);
-          text-decoration: none;
-        }
-        .primary-btn:hover { opacity: 0.82; }
-        @media (max-width: 768px) {
-          .page-header { flex-direction: column; gap: 0.75rem; align-items: flex-start !important; }
-        }
-        .modal-backdrop {
-          position: fixed; inset: 0;
-          background: rgba(0,0,0,0.35);
-          display: flex; align-items: center; justify-content: center;
-          z-index: 1000;
-          animation: fadeIn 0.12s ease;
-        }
-        .modal-box {
-          background: var(--surface);
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          box-shadow: 0 8px 32px rgba(0,0,0,0.14);
-          padding: 1.75rem 2rem 1.5rem;
-          width: 100%; max-width: 380px;
-          animation: slideUp 0.14s ease;
-        }
-        .modal-title {
-          font-family: var(--font-cormorant, serif);
-          font-size: 1.25rem; font-weight: 600;
-          color: var(--ink); margin: 0 0 0.5rem;
-        }
-        .modal-body {
-          font-size: 0.855rem; color: var(--ink-3);
-          margin: 0 0 1.4rem; line-height: 1.5;
-        }
-        .modal-body strong { color: var(--ink); font-weight: 600; }
-        .modal-actions { display: flex; gap: 0.6rem; justify-content: flex-end; }
-        .btn-cancel {
-          padding: 0.48rem 1rem;
-          border: 1px solid var(--border);
-          border-radius: var(--radius-sm);
-          background: var(--surface); color: var(--ink-3);
-          font-size: 0.835rem; font-weight: 500;
-          cursor: pointer; transition: all var(--transition);
-        }
-        .btn-cancel:hover { border-color: var(--ink-3); color: var(--ink); }
-        .btn-confirm-del {
-          padding: 0.48rem 1rem;
-          border: 1px solid var(--danger-border);
-          border-radius: var(--radius-sm);
-          background: var(--danger); color: #fff;
-          font-size: 0.835rem; font-weight: 600;
-          cursor: pointer; transition: opacity var(--transition);
-        }
-        .btn-confirm-del:hover { opacity: 0.85; }
+        .drawer-close:hover { color: var(--ink); border-color: var(--border-2); }
+        @keyframes drawerIn { from { transform: translateX(24px); opacity: 0 } to { transform: none; opacity: 1 } }
+        .cap-track { width: 56px; height: 5px; background: var(--border); border-radius: 2px; overflow: hidden; flex-shrink: 0; }
+        .cap-fill { height: 100%; border-radius: 2px; background: var(--accent); transition: width 0.3s; }
         @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
-        @keyframes slideUp { from { transform: translateY(6px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
       `}</style>
       <AuthGuard>
         <Nav />
         <main className="page-wrap">
 
           {/* Header */}
-          <div className="page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.75rem" }}>
+          <div className="page-header" style={{ marginBottom: "1.75rem" }}>
             <div>
               <h1 style={{
-                fontFamily: "var(--font-cormorant, serif)",
-                fontSize: "1.85rem", fontWeight: 600,
+                fontFamily: "var(--font-heading)",
+                fontSize: "1.5rem", fontWeight: 650,
                 lineHeight: 1, letterSpacing: "-0.01em",
                 color: "var(--ink)",
               }}>
                 Events
               </h1>
-              <p style={{ color: "var(--ink-4)", fontSize: "0.82rem", marginTop: "0.3rem" }}>
+              <p style={{ color: "var(--ink-3)", fontSize: "0.85rem", marginTop: "0.35rem" }}>
                 {total} {total === 1 ? "event" : "events"}
                 {totalCapacity > 0 && (
                   <span> — {totalBooked}/{totalCapacity} spots booked</span>
@@ -226,12 +175,18 @@ export default function EventsPage() {
           </div>
 
           {/* Filters */}
-          <div style={{ display: "flex", gap: "0.35rem", marginBottom: "1.2rem", flexWrap: "wrap" }}>
-            {FILTERS.map((f) => (
-              <button key={f} className={`filter-pill${filter === f ? " on" : ""}`} onClick={() => setFilter(f)}>
-                {f}
+          {/* Filters */}
+          <div style={{ display: "flex", gap: "0.6rem", marginBottom: "1.2rem", flexWrap: "wrap", alignItems: "center" }}>
+            <FilterSelect label="Date" options={DATE_OPTIONS} value={when} onChange={(v) => { setWhen(v); setPage(1); }} />
+            <FilterSelect label="Status" options={STATUS_OPTIONS} value={status} onChange={(v) => { setStatus(v); setPage(1); }} />
+            {(when || status) && (
+              <button
+                onClick={() => { setWhen(""); setStatus(""); setPage(1); }}
+                style={{ border: "none", background: "none", fontSize: "0.8rem", fontWeight: 600, color: "var(--accent)", cursor: "pointer" }}
+              >
+                Clear filters
               </button>
-            ))}
+            )}
           </div>
 
           {/* Delete error banner */}
@@ -277,36 +232,49 @@ export default function EventsPage() {
               </div>
             ) : events.length === 0 ? (
               <div style={{ padding: "4rem", textAlign: "center" }}>
-                <div style={{ color: "var(--ink-3)", fontSize: "0.875rem", marginBottom: "0.75rem" }}>No events found</div>
-                <Link href="/events/new" style={{ fontSize: "0.8rem", color: "var(--ink-4)", textDecoration: "underline" }}>
-                  Create your first event →
-                </Link>
+                {!when && !status ? (
+                  <>
+                    <div style={{ color: "var(--ink-3)", fontSize: "0.875rem", marginBottom: "0.75rem" }}>No events yet</div>
+                    <Link href="/events/new" style={{ fontSize: "0.8rem", color: "var(--ink-4)", textDecoration: "underline" }}>
+                      Create your first event →
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ color: "var(--ink-3)", fontSize: "0.875rem", marginBottom: "0.75rem" }}>
+                      No events match these filters
+                    </div>
+                    <button onClick={() => { setWhen(""); setStatus(""); setPage(1); }} style={{ fontSize: "0.8rem", color: "var(--accent)", background: "none", border: "none", cursor: "pointer", fontWeight: 600 }}>
+                      Clear filters →
+                    </button>
+                  </>
+                )}
               </div>
             ) : (
               <div style={{ overflowX: "auto" }}>
                 <table className="tbl">
                   <thead>
                     <tr>
-                      {["ID", "Title", "Status", "Type", "Date", "Capacity", ""].map((h) => (
+                      {["#", "Title", "Status", "Price", "Date", "Booked / Capacity", "Actions"].map((h) => (
                         <th key={h}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {events.map((ev) => {
+                    {events.map((ev, i) => {
                       const pct = ev.maxCapacity > 0 ? (ev.bookedCount / ev.maxCapacity) * 100 : 0;
                       const sc = STATUS_CONFIG[ev.status] ?? STATUS_CONFIG.archived;
                       return (
                         <tr key={ev.id}>
-                          <td>
+                          <td className="cell-idx">
                             <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: "0.75rem", color: "var(--ink-4)" }}>
-                              {ev.id}
+                              {(page - 1) * PAGE_SIZE + i + 1}
                             </span>
                           </td>
-                          <td style={{ fontWeight: 500, maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            {ev.title.en}
+                          <td className="cell-main" style={{ fontWeight: 500, maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            <Link href={`/events/${ev.id}`} style={{ color: "var(--ink)" }}>{ev.title.en}</Link>
                           </td>
-                          <td>
+                          <td data-label="Status">
                             <span style={{
                               display: "inline-flex", alignItems: "center", gap: "0.3rem",
                               background: sc.bg, color: sc.text,
@@ -318,26 +286,34 @@ export default function EventsPage() {
                               {ev.status}
                             </span>
                           </td>
-                          <td style={{ fontSize: "0.78rem", color: "var(--ink-3)" }}>
+                          <td data-label="Price" style={{ fontSize: "0.78rem", color: "var(--ink-3)" }}>
                             {ev.price === 0 ? "Free" : `${ev.price.toLocaleString("en-US")} AMD`}
                           </td>
-                          <td>
+                          <td data-label="Date">
                             <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: "0.78rem", color: "var(--ink-3)", whiteSpace: "nowrap" }}>
                               {ev.dates.start.slice(0, 10)}
                             </span>
                           </td>
-                          <td>
-                            <div className="cap-bar">
+                          <td data-label="Booked / Capacity">
+                            <button className="cap-bar" onClick={() => setParticipantsOf(ev)} title="View participants">
                               <div className="cap-track">
                                 <div className="cap-fill" style={{ width: `${Math.min(pct, 100)}%` }} />
                               </div>
                               <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: "0.775rem", color: "var(--ink-3)" }}>
                                 {ev.bookedCount}/{ev.maxCapacity}
                               </span>
-                            </div>
+                            </button>
                           </td>
-                          <td>
+                          <td data-label="" className="cell-actions">
                             <div style={{ display: "flex", gap: "0.4rem" }}>
+                              <button className="btn-people" onClick={() => setParticipantsOf(ev)}>
+                                <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden>
+                                  <circle cx="5" cy="4.5" r="2.2" stroke="currentColor" strokeWidth="1.3"/>
+                                  <path d="M1.2 12c.4-2.1 1.9-3.3 3.8-3.3s3.4 1.2 3.8 3.3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                                  <path d="M9.5 2.6a2 2 0 010 3.8M10.6 8.9c1.2.4 2 1.4 2.2 3.1" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                                </svg>
+                                Participants
+                              </button>
                               <Link href={`/events/${ev.id}`} className="btn-edit">Edit</Link>
                               <button
                                 onClick={() => handleDelete(ev.id, ev.slug, ev.title.en)}
@@ -353,26 +329,45 @@ export default function EventsPage() {
                     })}
                   </tbody>
                 </table>
+                <Pagination page={page} pageSize={PAGE_SIZE} total={total} onChange={setPage} />
               </div>
             )}
           </div>
         </main>
 
+        {/* Participants drawer — works for past and upcoming events alike */}
+        {participantsOf && (
+          <>
+            <div className="drawer-backdrop" onClick={() => setParticipantsOf(null)} />
+            <aside className="drawer" role="dialog" aria-modal="true" aria-label={`Participants of ${participantsOf.title.en}`}>
+              <div className="drawer-head">
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: "1rem", fontWeight: 650, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {participantsOf.title.en}
+                  </div>
+                  <div style={{ fontSize: "0.8rem", color: "var(--ink-3)", marginTop: "0.1rem" }}>
+                    {participantsOf.dates.start.slice(0, 16)}
+                    {participantsOf.dates.start.slice(0, 10) < new Date().toISOString().slice(0, 10) ? " · Past event" : " · Upcoming"}
+                    {" · "}{participantsOf.bookedCount}/{participantsOf.maxCapacity} booked
+                  </div>
+                </div>
+                <button className="drawer-close" onClick={() => setParticipantsOf(null)} aria-label="Close" autoFocus>×</button>
+              </div>
+              <div className="drawer-body">
+                <EventParticipants key={participantsOf.id} eventId={participantsOf.id} eventTitle={participantsOf.title.en} />
+              </div>
+            </aside>
+          </>
+        )}
+
         {/* Delete confirmation modal */}
         {confirmTarget && (
-          <div className="modal-backdrop" onClick={() => setConfirmTarget(null)}>
-            <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-              <p className="modal-title">Delete event?</p>
-              <p className="modal-body">
-                <strong>{confirmTarget.title}</strong> will be permanently removed.
-                This cannot be undone.
-              </p>
-              <div className="modal-actions">
-                <button className="btn-cancel" onClick={() => setConfirmTarget(null)}>Cancel</button>
-                <button className="btn-confirm-del" onClick={confirmDelete}>Delete</button>
-              </div>
-            </div>
-          </div>
+          <ConfirmDeleteModal
+            kind="event"
+            name={confirmTarget.title}
+            onCancel={() => setConfirmTarget(null)}
+            onConfirm={confirmDelete}
+          />
         )}
       </AuthGuard>
     </>

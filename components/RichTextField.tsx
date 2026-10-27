@@ -147,7 +147,7 @@ export default function RichTextField({ label, enValue, hyValue, onChange, hint,
         {hint && <span style={{ fontSize: "0.71rem", color: "var(--ink-4)" }}>{hint}</span>}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.65rem" }}>
+      <div className="lang-pair" style={{ gap: "0.65rem" }}>
         {(["en", "hy"] as const).map((lang) => {
           const value = lang === "en" ? enValue : hyValue;
           return (

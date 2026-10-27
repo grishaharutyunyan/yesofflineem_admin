@@ -59,7 +59,7 @@ export default function HostEditor({ value, onChange }: Props) {
       {/* Name */}
       <div style={{ marginBottom: "0.85rem" }}>
         <span style={sectionLabel}>Name</span>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+        <div className="lang-pair" style={{ gap: "0.5rem" }}>
           <div>
             <label style={colLabel}>EN</label>
             <input
@@ -88,7 +88,7 @@ export default function HostEditor({ value, onChange }: Props) {
       {/* Role */}
       <div>
         <span style={sectionLabel}>Role / Title</span>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+        <div className="lang-pair" style={{ gap: "0.5rem" }}>
           <div>
             <label style={colLabel}>EN</label>
             <input

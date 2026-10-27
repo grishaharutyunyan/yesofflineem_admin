@@ -183,8 +183,8 @@ export const deleteEvent = (id: number) =>
   req<void>('DELETE', `/events/${id}`);
 
 // Videos
-export const getVideos = () =>
-  req<{ items: ApiVideo[]; count: number }>('GET', '/videos');
+export const getVideos = (params = '') =>
+  req<{ items: ApiVideo[]; count: number }>('GET', `/videos${params ? '?' + params : ''}`);
 
 export const getVideo = (id: number) =>
   req<ApiVideo>('GET', `/videos/${id}`);
@@ -207,10 +207,29 @@ export interface ContactMessage {
   source: string;
   message: string;
   createdAt: string;
+  readAt: string | null;
 }
 
 export const getMessages = (source?: string) =>
   req<ContactMessage[]>('GET', `/contacts${source ? `?source=${source}` : ''}`);
+
+export interface UnreadCounts { contact: number; membership: number; total: number }
+
+export const getUnreadCounts = () =>
+  req<UnreadCounts>('GET', '/contacts/unread-count');
+
+export const setMessageRead = (id: number, read: boolean) =>
+  req<{ ok: true }>('PATCH', `/contacts/${id}/read`, { read });
+
+export const deleteMessage = (id: number) =>
+  req<void>('DELETE', `/contacts/${id}`);
+
+export const markAllMessagesRead = (source?: string) =>
+  req<{ ok: true }>('POST', `/contacts/read-all${source ? `?source=${source}` : ''}`);
+
+// Fired after read state changes so the sidebar badge refreshes immediately.
+export const UNREAD_CHANGED = 'unread-messages-changed';
+export const notifyUnreadChanged = () => window.dispatchEvent(new Event(UNREAD_CHANGED));
 
 // Upload
 export async function uploadImage(file: File): Promise<string> {
@@ -299,8 +318,25 @@ export const currencyLabel = (code: string) => CURRENCY_LABELS[code] ?? code;
 export const ordersCsvUrl = (query = "") =>
   `${BASE}/orders/export${query ? `?${query}` : ""}`;
 
-export async function exportOrders(query = ""): Promise<Blob> {
-  const res = await authedFetch(`/orders/export${query ? `?${query}` : ""}`, {});
-  if (!res.ok) throw new Error(`Export failed: ${res.status}`);
-  return res.blob();
+// Fetches an authenticated file and saves it under the server's filename (or the fallback).
+async function downloadFile(path: string, fallbackName: string): Promise<void> {
+  const res = await authedFetch(path, {});
+  if (!res.ok) throw new Error(`Download failed: ${res.status}`);
+  const match = /filename="([^"]+)"/.exec(res.headers.get('content-disposition') ?? '');
+  const url = URL.createObjectURL(await res.blob());
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = match?.[1] ?? fallbackName;
+  a.click();
+  URL.revokeObjectURL(url);
 }
+
+export const downloadParticipantsPdf = (eventId: number) =>
+  downloadFile(`/orders/participants-pdf?eventId=${eventId}`, `participants-${eventId}.pdf`);
+
+export const downloadOrdersPdf = (query = '') =>
+  downloadFile(`/orders/export-pdf${query ? `?${query}` : ''}`, 'orders.pdf');
+
+export const downloadOrdersCsv = (query = '') =>
+  downloadFile(`/orders/export${query ? `?${query}` : ''}`, 'orders.csv');
+

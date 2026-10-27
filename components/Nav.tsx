@@ -3,11 +3,11 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { getUser } from "@/lib/auth";
-import { logout } from "@/lib/api";
+import { logout, getUnreadCounts, UNREAD_CHANGED } from "@/lib/api";
 
 function DashboardIcon() {
   return (
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+    <svg width="18" height="18" viewBox="0 0 15 15" fill="none" aria-hidden>
       <rect x="1.5" y="1.5" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.2"/>
       <rect x="8.5" y="1.5" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.2"/>
       <rect x="1.5" y="8.5" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.2"/>
@@ -18,7 +18,7 @@ function DashboardIcon() {
 
 function CalendarIcon() {
   return (
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+    <svg width="18" height="18" viewBox="0 0 15 15" fill="none" aria-hidden>
       <rect x="1.5" y="2.5" width="12" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
       <path d="M5 1.5v2M10 1.5v2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
       <path d="M1.5 6.5h12" stroke="currentColor" strokeWidth="1.2"/>
@@ -30,7 +30,7 @@ function CalendarIcon() {
 
 function VideoIcon() {
   return (
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+    <svg width="18" height="18" viewBox="0 0 15 15" fill="none" aria-hidden>
       <rect x="1" y="3" width="9" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
       <path d="M10 5.8l3.5-2v7.4L10 9.2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
@@ -39,7 +39,7 @@ function VideoIcon() {
 
 function MessageIcon() {
   return (
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+    <svg width="18" height="18" viewBox="0 0 15 15" fill="none" aria-hidden>
       <rect x="1" y="2.5" width="13" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
       <path d="M4 12.5l1.5-1H14" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
       <path d="M4 6h7M4 8.5h4.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
@@ -49,7 +49,7 @@ function MessageIcon() {
 
 function OrdersIcon() {
   return (
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+    <svg width="18" height="18" viewBox="0 0 15 15" fill="none" aria-hidden>
       <rect x="2" y="1.5" width="11" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
       <path d="M4.5 5h6M4.5 7.5h6M4.5 10h4" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
     </svg>
@@ -74,6 +74,16 @@ function HamburgerIcon() {
   );
 }
 
+function CollapseIcon({ collapsed }: { collapsed: boolean }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
+      <rect x="2" y="3" width="14" height="12" rx="2" stroke="currentColor" strokeWidth="1.3"/>
+      <path d="M7 3v12" stroke="currentColor" strokeWidth="1.3"/>
+      <path d={collapsed ? "M10.5 7.5L12 9l-1.5 1.5" : "M12 7.5L10.5 9l1.5 1.5"} stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
 function XIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
@@ -94,22 +104,22 @@ function Logo() {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "0.55rem" }}>
       <div style={{
-        width: 30, height: 30, borderRadius: 7,
-        background: "rgba(255,255,255,0.07)",
-        border: "1px solid rgba(255,255,255,0.1)",
+        width: 32, height: 32, borderRadius: 8,
+        background: "var(--accent)",
+        boxShadow: "0 2px 8px rgba(79,70,229,0.45)",
         display: "flex", alignItems: "center", justifyContent: "center",
         flexShrink: 0,
       }}>
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-          <path d="M7.5 2.5a5 5 0 100 10 5 5 0 000-10z" stroke="rgba(255,255,255,0.65)" strokeWidth="1.2"/>
-          <path d="M7.5 5v2.5l2 2" stroke="rgba(255,255,255,0.65)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M7.5 2.5a5 5 0 100 10 5 5 0 000-10z" stroke="#fff" strokeWidth="1.3"/>
+          <path d="M7.5 5v2.5l2 2" stroke="#fff" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </div>
-      <div>
+      <div className="nav-label">
         <div style={{
           fontFamily: "var(--font-cormorant, serif)",
           fontSize: "1.05rem", lineHeight: 1,
-          color: "rgba(255,255,255,0.82)",
+          color: "#fff",
           letterSpacing: "0.01em",
         }}>
           <span style={{ fontWeight: 300 }}>yes</span>
@@ -119,7 +129,7 @@ function Logo() {
         <div style={{
           fontSize: "0.6rem", letterSpacing: "0.18em",
           textTransform: "uppercase",
-          color: "rgba(255,255,255,0.22)", fontWeight: 500,
+          color: "rgba(255,255,255,0.4)", fontWeight: 500,
           marginTop: "0.12rem",
         }}>
           admin studio
@@ -135,6 +145,27 @@ export default function Nav() {
   const user = getUser();
   const initial = user?.email?.[0]?.toUpperCase() ?? "A";
   const [open, setOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const [unread, setUnread] = useState(0);
+
+  // Unread messages badge: refresh on load, every minute, and when the messages page changes read state.
+  useEffect(() => {
+    const refresh = () => getUnreadCounts().then((c) => setUnread(c.total)).catch(() => {});
+    refresh();
+    const id = setInterval(refresh, 60_000);
+    window.addEventListener(UNREAD_CHANGED, refresh);
+    return () => { clearInterval(id); window.removeEventListener(UNREAD_CHANGED, refresh); };
+  }, []);
+
+  // Restore the desktop collapse preference; the data attribute drives --sidebar-w in globals.css.
+  useEffect(() => {
+    try { setCollapsed(localStorage.getItem("nav-collapsed") === "1"); } catch {}
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.dataset.nav = collapsed ? "collapsed" : "open";
+    try { localStorage.setItem("nav-collapsed", collapsed ? "1" : "0"); } catch {}
+  }, [collapsed]);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -149,10 +180,11 @@ export default function Nav() {
         .nav-item {
           display: flex;
           align-items: center;
-          gap: 0.6rem;
-          padding: 0.48rem 0.65rem;
-          border-radius: 7px;
-          font-size: 0.855rem;
+          gap: 0.75rem;
+          padding: 0.62rem 0.75rem;
+          border-radius: 8px;
+          font-size: 0.95rem;
+          white-space: nowrap;
           color: var(--sidebar-ink);
           background: transparent;
           transition: color 0.14s, background 0.14s;
@@ -160,7 +192,13 @@ export default function Nav() {
           letter-spacing: 0.01em;
         }
         .nav-item:hover { color: var(--sidebar-ink-active); background: var(--sidebar-hover); }
-        .nav-item.active { color: var(--sidebar-ink-active); background: var(--sidebar-active); font-weight: 500; }
+        .nav-item { position: relative; }
+        .nav-item.active { color: var(--sidebar-ink-active); background: var(--sidebar-active); font-weight: 600; }
+        .nav-item.active::before {
+          content: ""; position: absolute; left: -0.6rem; top: 20%; bottom: 20%;
+          width: 3px; border-radius: 0 3px 3px 0; background: var(--accent);
+        }
+        .nav-item.active svg { color: #a5b4fc; }
         .nav-item .dot {
           width: 5px; height: 5px; border-radius: 50%;
           background: rgba(255,255,255,0.3);
@@ -168,6 +206,19 @@ export default function Nav() {
           opacity: 0;
         }
         .nav-item.active .dot { opacity: 1; }
+        .nav-badge {
+          margin-left: auto; min-width: 20px; height: 20px; padding: 0 6px;
+          display: inline-flex; align-items: center; justify-content: center;
+          border-radius: 100px; background: var(--danger); color: #fff;
+          font-size: 0.7rem; font-weight: 700; line-height: 1;
+        }
+        .nav-item:has(.nav-badge) .dot { display: none; }
+        .nav-icon-wrap { position: relative; display: inline-flex; }
+        .nav-icon-dot {
+          display: none; position: absolute; top: -3px; right: -4px;
+          width: 8px; height: 8px; border-radius: 50%;
+          background: var(--danger); box-shadow: 0 0 0 2px var(--sidebar-bg);
+        }
         .signout-btn {
           background: none; border: none;
           color: rgba(255,255,255,0.28);
@@ -176,6 +227,29 @@ export default function Nav() {
           transition: color 0.14s, background 0.14s;
         }
         .signout-btn:hover { color: rgba(255,255,255,0.65); background: rgba(255,255,255,0.06); }
+
+        .nav-sidebar { transition: width 0.2s ease; overflow: hidden; }
+        .nav-toggle {
+          background: none; border: none;
+          color: rgba(255,255,255,0.4);
+          cursor: pointer; padding: 0.35rem;
+          border-radius: 6px; display: flex; align-items: center;
+          transition: color 0.14s, background 0.14s;
+          flex-shrink: 0;
+        }
+        .nav-toggle:hover { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.08); }
+
+        /* Collapsed (icon-only) rail — desktop only */
+        @media (min-width: 769px) {
+          html[data-nav="collapsed"] .nav-label,
+          html[data-nav="collapsed"] .nav-logo,
+          html[data-nav="collapsed"] .nav-item .dot,
+          html[data-nav="collapsed"] .nav-badge { display: none; }
+          html[data-nav="collapsed"] .nav-icon-dot { display: block; }
+          html[data-nav="collapsed"] .nav-head { justify-content: center; padding-inline: 0; }
+          html[data-nav="collapsed"] .nav-item { justify-content: center; padding-inline: 0; }
+          html[data-nav="collapsed"] .nav-foot { flex-direction: column; padding-inline: 0; }
+        }
 
         /* Mobile top bar */
         .mob-topbar {
@@ -208,6 +282,7 @@ export default function Nav() {
 
         @media (max-width: 768px) {
           .mob-topbar { display: flex; }
+          .nav-toggle { display: none; }
 
           .nav-sidebar {
             transform: translateX(-100%);
@@ -229,7 +304,10 @@ export default function Nav() {
       {/* Mobile top bar */}
       <div className="mob-topbar">
         <button className="mob-burger" onClick={() => setOpen((o) => !o)} aria-label={open ? "Close menu" : "Open menu"}>
-          {open ? <XIcon /> : <HamburgerIcon />}
+          <span className="nav-icon-wrap">
+            {open ? <XIcon /> : <HamburgerIcon />}
+            {!open && unread > 0 && <span className="nav-icon-dot" style={{ display: "block" }} />}
+          </span>
         </button>
         <Logo />
         <div style={{ width: 36, flexShrink: 0 }} />
@@ -251,19 +329,28 @@ export default function Nav() {
         }}
       >
         {/* Logo */}
-        <div style={{
-          padding: "1.4rem 1.2rem 1.2rem",
+        <div className="nav-head" style={{
+          padding: "1.2rem 0.9rem 1.1rem 1.2rem",
           borderBottom: "1px solid var(--sidebar-sep)",
+          display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem",
         }}>
-          <Logo />
+          <div className="nav-logo"><Logo /></div>
+          <button
+            className="nav-toggle"
+            onClick={() => setCollapsed((c) => !c)}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            <CollapseIcon collapsed={collapsed} />
+          </button>
         </div>
 
         {/* Navigation */}
         <nav style={{ flex: 1, padding: "0.85rem 0.6rem" }}>
-          <div style={{
-            fontSize: "0.59rem", letterSpacing: "0.16em",
+          <div className="nav-label" style={{
+            fontSize: "0.62rem", letterSpacing: "0.16em",
             textTransform: "uppercase",
-            color: "rgba(255,255,255,0.18)",
+            color: "rgba(255,255,255,0.35)",
             fontWeight: 600,
             padding: "0.2rem 0.55rem 0.55rem",
           }}>
@@ -271,15 +358,21 @@ export default function Nav() {
           </div>
           {links.map(({ href, label, Icon }) => {
             const active = path.startsWith(href);
+            const badge = href === "/messages" && unread > 0 ? unread : 0;
             return (
               <Link
                 key={href}
                 href={href}
                 className={`nav-item${active ? " active" : ""}`}
                 onClick={() => setOpen(false)}
+                title={badge ? `${label} — ${badge} unread` : label}
               >
-                <Icon />
-                {label}
+                <span className="nav-icon-wrap">
+                  <Icon />
+                  {badge > 0 && <span className="nav-icon-dot" />}
+                </span>
+                <span className="nav-label">{label}</span>
+                {badge > 0 && <span className="nav-badge" aria-label={`${badge} unread`}>{badge > 99 ? "99+" : badge}</span>}
                 <span className="dot" />
               </Link>
             );
@@ -287,7 +380,7 @@ export default function Nav() {
         </nav>
 
         {/* User */}
-        <div style={{
+        <div className="nav-foot" style={{
           padding: "0.85rem 1rem",
           borderTop: "1px solid var(--sidebar-sep)",
           display: "flex", alignItems: "center", gap: "0.55rem",
@@ -307,9 +400,9 @@ export default function Nav() {
           >
             {initial}
           </Link>
-          <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="nav-label" style={{ flex: 1, minWidth: 0 }}>
             <div style={{
-              fontSize: "0.72rem", color: "rgba(255,255,255,0.35)",
+              fontSize: "0.78rem", color: "rgba(255,255,255,0.35)",
               overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
             }}>
               {user?.email ?? ""}

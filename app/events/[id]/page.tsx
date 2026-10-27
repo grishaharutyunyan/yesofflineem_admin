@@ -42,8 +42,8 @@ export default function EditEventPage() {
               <div style={{ marginBottom: "1.75rem", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                 <div>
                   <h1 style={{
-                    fontFamily: "var(--font-cormorant, serif)",
-                    fontSize: "1.85rem", fontWeight: 600, lineHeight: 1, letterSpacing: "-0.01em",
+                    fontFamily: "var(--font-heading)",
+                    fontSize: "1.5rem", fontWeight: 650, lineHeight: 1, letterSpacing: "-0.01em",
                   }}>
                     Edit event
                   </h1>

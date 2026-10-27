@@ -63,12 +63,12 @@ export default function AccountPage() {
         }
         .account-field::placeholder { color: var(--ink-4); }
         .account-field:focus {
-          border-color: var(--ink);
-          box-shadow: 0 0 0 3px rgba(10,10,10,0.07);
+          border-color: var(--accent);
+          box-shadow: 0 0 0 3px rgba(79,70,229,0.15);
         }
         .account-btn {
           padding: 0.62rem 1.4rem;
-          background: var(--ink);
+          background: var(--accent);
           color: #fff;
           border: none;
           border-radius: var(--radius-sm);

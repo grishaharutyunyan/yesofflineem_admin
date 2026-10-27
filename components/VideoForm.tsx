@@ -54,7 +54,7 @@ function SectionCard({ number, title, children }: { number: string; title: strin
         background: "var(--surface-2)",
       }}>
         <span style={{
-          fontFamily: "var(--font-cormorant, serif)",
+          fontFamily: "var(--font-heading)",
           fontSize: "1.15rem", fontWeight: 300,
           color: "var(--ink-4)", lineHeight: 1,
           letterSpacing: "-0.01em",
@@ -139,8 +139,8 @@ export default function VideoForm({ initial, onSubmit }: Props) {
         }
         .form-input::placeholder { color: var(--ink-4); }
         .form-input:focus, .form-select:focus, .form-textarea:focus {
-          border-color: var(--ink);
-          box-shadow: 0 0 0 3px rgba(10,10,10,0.06);
+          border-color: var(--accent);
+          box-shadow: 0 0 0 3px rgba(79,70,229,0.15);
         }
         .form-mono {
           font-family: var(--font-mono, monospace) !important;
@@ -149,7 +149,7 @@ export default function VideoForm({ initial, onSubmit }: Props) {
         }
         .form-btn-primary {
           padding: 0.65rem 1.5rem;
-          background: var(--ink); color: #fff;
+          background: var(--accent); color: #fff;
           border: none; border-radius: var(--radius-sm);
           font-size: 0.875rem; font-weight: 600;
           letter-spacing: 0.02em;
