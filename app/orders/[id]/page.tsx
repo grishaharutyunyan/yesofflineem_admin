@@ -138,6 +138,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             <Row label="Phone" value={order.phone ?? "—"} />
             <Row label="Guests" value={String(order.guests)} />
             <Row label="Amount" value={`${currencyLabel(order.currency)} ${(order.amount / 100).toLocaleString()}`} />
+            {order.promoCode && <Row label="Promo code" value={`${order.promoCode} (−${order.discountPercent}%)`} />}
             <Row label="Card" value={order.panMasked ?? "—"} />
             <Row label="Paid at" value={order.paymentDate ? new Date(order.paymentDate).toLocaleString() : "—"} />
             <Row label="Gateway result" value={order.actionCodeDescription ?? "—"} />

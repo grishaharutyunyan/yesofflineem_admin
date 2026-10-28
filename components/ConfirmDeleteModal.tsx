@@ -2,12 +2,17 @@
 import { useEffect } from "react";
 
 // Delete confirmation dialog shared by the list pages. Escape or a backdrop click cancels.
-export default function ConfirmDeleteModal({ kind, name, onCancel, onConfirm }: {
+// title/body/confirmLabel turn it into a plain (non-destructive) "are you sure?" dialog.
+export default function ConfirmDeleteModal({ kind, name, onCancel, onConfirm, title, body, confirmLabel }: {
   kind: string;
   name: string;
   onCancel: () => void;
   onConfirm: () => void;
+  title?: string;
+  body?: string;
+  confirmLabel?: string;
 }) {
+  const danger = !confirmLabel;
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onCancel(); };
     window.addEventListener("keydown", onKey);
@@ -66,18 +71,20 @@ export default function ConfirmDeleteModal({ kind, name, onCancel, onConfirm }: 
       `}</style>
       <div className="modal-backdrop" onClick={onCancel}>
         <div className="modal-box" role="alertdialog" aria-modal="true" aria-labelledby="confirm-del-title" onClick={(e) => e.stopPropagation()}>
-          <div className="modal-icon">
+          <div className="modal-icon" style={danger ? undefined : { background: "var(--surface-2)", color: "var(--accent)" }}>
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
-              <path d="M3.5 5h11M7.5 5V3.5h3V5M5 5l.7 9.5h6.6L13 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              {danger
+                ? <path d="M3.5 5h11M7.5 5V3.5h3V5M5 5l.7 9.5h6.6L13 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                : <><circle cx="9" cy="9" r="6.5" stroke="currentColor" strokeWidth="1.5"/><path d="M7 7.2a2 2 0 113 1.7c-.6.4-1 .8-1 1.5M9 12.6v.1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></>}
             </svg>
           </div>
-          <p id="confirm-del-title" className="modal-title">Delete {kind}?</p>
+          <p id="confirm-del-title" className="modal-title">{title ?? `Delete ${kind}?`}</p>
           <p className="modal-body">
-            <strong>{name}</strong> will be permanently removed. This cannot be undone.
+            <strong>{name}</strong> {body ?? "will be permanently removed. This cannot be undone."}
           </p>
           <div className="modal-actions">
             <button className="btn-cancel" onClick={onCancel} autoFocus>Cancel</button>
-            <button className="btn-confirm-del" onClick={onConfirm}>Delete</button>
+            <button className={danger ? "btn-confirm-del" : "primary-btn"} onClick={onConfirm}>{confirmLabel ?? "Delete"}</button>
           </div>
         </div>
       </div>

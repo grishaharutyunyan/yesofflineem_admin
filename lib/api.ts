@@ -113,6 +113,7 @@ export interface ApiEvent {
   maxCapacity: number;
   bookedCount: number;
   price: number;
+  promoEnabled: boolean;
   cardImageUrl: string | null;
   galleryImageUrls: string[] | null;
   ctaLabel: LocaleText | null;
@@ -282,6 +283,8 @@ export interface ApiOrder {
   panMasked: string | null;
   actionCode: string | null;
   actionCodeDescription: string | null;
+  promoCode: string | null;
+  discountPercent: number | null;
   paymentDate: string | null;
   createdAt: string;
   updatedAt: string;
@@ -340,3 +343,26 @@ export const downloadOrdersPdf = (query = '') =>
 export const downloadOrdersCsv = (query = '') =>
   downloadFile(`/orders/export${query ? `?${query}` : ''}`, 'orders.csv');
 
+
+// Promo codes
+export interface ApiPromoCode {
+  id: number;
+  code: string;
+  eventId: number | null;
+  discountPercent: number;
+  maxUses: number | null;
+  usedCount: number;
+  validFrom: string | null;
+  validUntil: string | null;
+  active: boolean;
+  createdAt: string;
+}
+
+export const getPromoCodes = () => req<ApiPromoCode[]>('GET', '/promo-codes');
+
+export const createPromoCode = (dto: object) => req<ApiPromoCode>('POST', '/promo-codes', dto);
+
+export const setPromoCodeActive = (id: number, active: boolean) =>
+  req<ApiPromoCode>('PATCH', `/promo-codes/${id}`, { active });
+
+export const deletePromoCode = (id: number) => req<void>('DELETE', `/promo-codes/${id}`);
