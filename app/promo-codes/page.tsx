@@ -152,7 +152,10 @@ export default function PromoCodesPage() {
                             </button>
                           </div>
                         </td>
-                        <td data-label="Discount">{p.discountPercent}%</td>
+                        <td data-label="Discount" style={{ whiteSpace: "nowrap" }}>
+                          {p.discountPercent}%
+                          <span style={{ display: "block", fontSize: "0.72rem", color: "var(--ink-3)" }}>{p.singleGuest ? "1 guest" : "every guest"}</span>
+                        </td>
                         <td data-label="Event" style={{ maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{eventName(p.eventId)}</td>
                         <td data-label="Used">{p.usedCount}{p.maxUses != null ? ` / ${p.maxUses}` : ""}</td>
                         <td data-label="Valid" style={{ fontSize: "0.78rem", color: "var(--ink-3)", whiteSpace: "nowrap" }}>

@@ -350,6 +350,7 @@ export interface ApiPromoCode {
   code: string;
   eventId: number | null;
   discountPercent: number;
+  singleGuest: boolean;
   maxUses: number | null;
   usedCount: number;
   validFrom: string | null;
