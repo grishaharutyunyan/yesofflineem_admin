@@ -68,6 +68,7 @@ export default function PromoCodeModal({ events, onClose, onCreated }: {
   onCreated: () => void;
 }) {
   const [form, setForm] = useState({ ...emptyForm, code: randomCode() });
+  const [singleGuest, setSingleGuest] = useState(true);
   const [template, setTemplate] = useState<number | null>(null);
   const [touched, setTouched] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -105,6 +106,7 @@ export default function PromoCodeModal({ events, onClose, onCreated }: {
         code: form.code,
         eventId: form.eventId ? Number(form.eventId) : null,
         discountPercent: Number(form.discountPercent),
+        singleGuest,
         maxUses: form.maxUses ? Number(form.maxUses) : null,
         validFrom: form.validFrom ? new Date(form.validFrom).toISOString() : null,
         validUntil: form.validUntil ? new Date(form.validUntil).toISOString() : null,
@@ -219,6 +221,21 @@ export default function PromoCodeModal({ events, onClose, onCreated }: {
                   style={{ width: 90 }} value={form.discountPercent} onChange={set("discountPercent")} aria-label="Custom discount %" />
               </div>
               {show("discountPercent") && <span className="pcm-err">{errs.discountPercent}</span>}
+            </div>
+
+            <div className="pcm-section">
+              <span className="pcm-lbl">Discount applies to</span>
+              <div className="pcm-chips" role="radiogroup">
+                <button type="button" role="radio" aria-checked={singleGuest} className={`pcm-chip${singleGuest ? " on" : ""}`}
+                  onClick={() => setSingleGuest(true)}>1 guest per order</button>
+                <button type="button" role="radio" aria-checked={!singleGuest} className={`pcm-chip${!singleGuest ? " on" : ""}`}
+                  onClick={() => setSingleGuest(false)}>Every guest</button>
+              </div>
+              <span className="pcm-hint" style={{ marginLeft: 0 }}>
+                {singleGuest
+                  ? "e.g. 3 guests at 10,000 AMD, 20% off → 8,000 + 10,000 + 10,000 = 28,000 AMD"
+                  : "e.g. 3 guests at 10,000 AMD, 20% off → 24,000 AMD"}
+              </span>
             </div>
 
             <div className="pcm-row">
