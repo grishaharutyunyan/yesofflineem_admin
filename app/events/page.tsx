@@ -7,7 +7,7 @@ import Pagination from "@/components/Pagination";
 import EventParticipants from "@/components/EventParticipants";
 import ConfirmDeleteModal from "@/components/ConfirmDeleteModal";
 import FilterSelect, { type FilterOption } from "@/components/FilterSelect";
-import { getEvents, deleteEvent, type ApiEvent } from "@/lib/api";
+import { getEvents, deleteEvent, updateEvent, type ApiEvent } from "@/lib/api";
 
 const STATUS_CONFIG: Record<string, { bg: string; text: string; dot: string }> = {
   active:   { bg: "var(--success-bg)",  text: "var(--success)",  dot: "var(--success)" },
@@ -41,6 +41,7 @@ export default function EventsPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [confirmTarget, setConfirmTarget] = useState<{ id: number; slug: string; title: string } | null>(null);
   const [participantsOf, setParticipantsOf] = useState<ApiEvent | null>(null);
+  const [promoTarget, setPromoTarget] = useState<ApiEvent | null>(null);
 
   // Close the participants drawer with Escape.
   useEffect(() => {
@@ -103,6 +104,19 @@ export default function EventsPage() {
     }
   }
 
+  async function confirmPromoToggle() {
+    if (!promoTarget) return;
+    const { id, promoEnabled, slug } = promoTarget;
+    setPromoTarget(null);
+    setDeleteError(null);
+    try {
+      await updateEvent(id, { promoEnabled: !promoEnabled });
+      load();
+    } catch (err: unknown) {
+      setDeleteError(`Failed to update promo codes for "${slug}": ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
   const totalBooked = events.reduce((a, e) => a + e.bookedCount, 0);
   const totalCapacity = events.reduce((a, e) => a + e.maxCapacity, 0);
 
@@ -124,6 +138,16 @@ export default function EventsPage() {
           transition: background var(--transition);
         }
         .btn-people:hover { background: #e0e7ff; }
+        .btn-promo {
+          display: inline-flex; align-items: center; gap: 0.35rem;
+          padding: 0.3rem 0.6rem; border-radius: var(--radius-sm);
+          border: 1px solid var(--border); background: var(--surface); color: var(--ink-3);
+          font-size: 0.78rem; font-weight: 600; cursor: pointer; white-space: nowrap;
+          transition: all var(--transition);
+        }
+        .btn-promo:hover { border-color: var(--accent); color: var(--accent); }
+        .btn-promo.on { border-color: var(--success); background: var(--success-bg); color: var(--success); }
+        .btn-promo input { margin: 0; pointer-events: none; accent-color: var(--success); }
         .drawer-backdrop { position: fixed; inset: 0; background: rgba(15,23,42,0.4); z-index: 900; animation: fadeIn 0.15s ease; }
         .drawer {
           position: fixed; top: 0; right: 0; bottom: 0; z-index: 901;
@@ -306,14 +330,28 @@ export default function EventsPage() {
                           </td>
                           <td data-label="" className="cell-actions">
                             <div style={{ display: "flex", gap: "0.4rem" }}>
-                              <button className="btn-people" onClick={() => setParticipantsOf(ev)}>
+                              <button className="btn-people" onClick={() => setParticipantsOf(ev)} title="Participants" aria-label="Participants">
                                 <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden>
                                   <circle cx="5" cy="4.5" r="2.2" stroke="currentColor" strokeWidth="1.3"/>
                                   <path d="M1.2 12c.4-2.1 1.9-3.3 3.8-3.3s3.4 1.2 3.8 3.3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
                                   <path d="M9.5 2.6a2 2 0 010 3.8M10.6 8.9c1.2.4 2 1.4 2.2 3.1" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
                                 </svg>
-                                Participants
                               </button>
+                              {ev.price > 0 && (
+                                <button
+                                  className={`btn-promo${ev.promoEnabled ? " on" : ""}`}
+                                  onClick={() => setPromoTarget(ev)}
+                                  title={ev.promoEnabled ? "Promo field shown on booking page" : "Promo field hidden on booking page"}
+                                  aria-pressed={ev.promoEnabled}
+                                  aria-label="Promo codes"
+                                >
+                                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden>
+                                    <path d="M1.5 7.6V2.2c0-.4.3-.7.7-.7h5.4l5 5a1 1 0 010 1.4l-4.1 4.1a1 1 0 01-1.4 0l-5.6-4.4z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
+                                    <circle cx="4.6" cy="4.6" r="1" fill="currentColor"/>
+                                  </svg>
+                                  <input type="checkbox" checked={ev.promoEnabled} readOnly tabIndex={-1} aria-hidden />
+                                </button>
+                              )}
                               <Link href={`/events/${ev.id}`} className="btn-edit">Edit</Link>
                               <button
                                 onClick={() => handleDelete(ev.id, ev.slug, ev.title.en)}
@@ -358,6 +396,20 @@ export default function EventsPage() {
               </div>
             </aside>
           </>
+        )}
+
+        {promoTarget && (
+          <ConfirmDeleteModal
+            kind="event"
+            name={promoTarget.title.en}
+            title={promoTarget.promoEnabled ? "Disable promo codes?" : "Enable promo codes?"}
+            body={promoTarget.promoEnabled
+              ? "will hide the promo code field on its booking page, and codes will be rejected at checkout."
+              : "will show the promo code field on its booking page when a usable code exists."}
+            confirmLabel={promoTarget.promoEnabled ? "Disable" : "Enable"}
+            onCancel={() => setPromoTarget(null)}
+            onConfirm={confirmPromoToggle}
+          />
         )}
 
         {/* Delete confirmation modal */}

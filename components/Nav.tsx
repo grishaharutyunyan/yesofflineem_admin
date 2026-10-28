@@ -56,6 +56,15 @@ function OrdersIcon() {
   );
 }
 
+function TagIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 15 15" fill="none" aria-hidden>
+      <path d="M1.5 2.5v4.2l6.8 6.8 5.2-5.2-6.8-6.8H2.5a1 1 0 00-1 1z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+      <circle cx="4.7" cy="4.7" r="1" fill="currentColor"/>
+    </svg>
+  );
+}
+
 function SignOutIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
@@ -98,6 +107,7 @@ const links = [
   { href: "/videos", label: "Videos", Icon: VideoIcon },
   { href: "/messages", label: "Messages", Icon: MessageIcon },
   { href: "/orders", label: "Orders", Icon: OrdersIcon },
+  { href: "/promo-codes", label: "Promo codes", Icon: TagIcon },
 ];
 
 function Logo() {

@@ -213,7 +213,24 @@ export default function OrdersPage() {
                           <td data-label="Phone" style={{ color: "var(--ink-3)", whiteSpace: "nowrap" }}>{o.phone ?? "—"}</td>
                           <td data-label="Event">{o.eventTitle?.en ?? o.eventSlug}</td>
                           <td data-label="Guests">{o.guests}</td>
-                          <td data-label="Amount" style={{ whiteSpace: "nowrap" }}>{currencyLabel(o.currency)} {(o.amount / 100).toLocaleString()}</td>
+                          <td data-label="Amount" style={{ whiteSpace: "nowrap" }}>
+                            {currencyLabel(o.currency)} {(o.amount / 100).toLocaleString()}
+                            {o.promoCode && (
+                              <span title={`Bought with promo code ${o.promoCode}`} style={{
+                                display: "flex", width: "fit-content", alignItems: "center", gap: "0.25rem", marginTop: "0.3rem",
+                                padding: "0.1rem 0.45rem", borderRadius: 100,
+                                background: "var(--accent-bg)", color: "var(--accent-ink)", border: "1px solid #c7d2fe",
+                                fontSize: "0.7rem", fontWeight: 600,
+                              }}>
+                                <svg width="11" height="11" viewBox="0 0 14 14" fill="none" aria-hidden>
+                                  <path d="M1.5 7.6V2.2c0-.4.3-.7.7-.7h5.4l5 5a1 1 0 010 1.4l-4.1 4.1a1 1 0 01-1.4 0l-5.6-4.4z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
+                                  <circle cx="4.6" cy="4.6" r="1" fill="currentColor"/>
+                                </svg>
+                                <span style={{ fontFamily: "var(--font-mono, monospace)" }}>{o.promoCode}</span>
+                                −{o.discountPercent}%
+                              </span>
+                            )}
+                          </td>
                           <td data-label="Status">
                             <span style={{
                               display: "inline-flex", alignItems: "center",
